@@ -4926,7 +4926,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.c
 (function(){
  var FB="https://www.gstatic.com/firebasejs/10.12.2/";
  var cfg={apiKey:"AIzaSyBHVQyPjqZhZCdxuVHND-cBZWF6kn9gKYY",authDomain:"twisted-companion.firebaseapp.com",projectId:"twisted-companion",storageBucket:"twisted-companion.firebasestorage.app",messagingSenderId:"1044382205472",appId:"1:1044382205472:web:419bb4b87b2e7c26341e45"};
- var KEYS=["ss-chars","ss-fallen","ss-theme","ss-nav"];
+ var KEYS=["ss-chars","ss-fallen","ss-theme"];
  var btn=document.getElementById("ss-sync-btn");
  function setS(t){if(btn)btn.innerHTML=t;}
  function gather(){var o={};KEYS.forEach(function(k){var v=localStorage.getItem(k);if(v!=null)o[k]=v;});return o;}
@@ -4945,7 +4945,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.c
     setS("&#9729; "+(u.email||"Synced")+" &middot; Sign out");
     fsM.getDoc(ref(u.uid)).then(function(snap){
      var d=snap.exists()?snap.data():null;
-     if(d&&d.sheetsnap_blob){try{var c=JSON.parse(d.sheetsnap_blob);if(apply(c)){last=JSON.stringify(gather());location.reload();return;}}catch(e){}}
+     if(d&&d.sheetsnap_blob){try{var c=JSON.parse(d.sheetsnap_blob);if(apply(c)&&!sessionStorage.getItem("ss-sync-reloaded")){sessionStorage.setItem("ss-sync-reloaded","1");location.reload();return;}}catch(e){}}
      last=JSON.stringify(gather());push();
     }).catch(function(e){setS("&#9729; Sync blocked &mdash; check Firebase rules");});
    } else { setS("&#9729; Sign in to sync"); }
