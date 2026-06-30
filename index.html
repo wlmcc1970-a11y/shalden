@@ -2749,8 +2749,8 @@ function AvatarEditor({
   }, label);
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      width: "74%",
-      maxWidth: 300,
+      width: "80%",
+      maxWidth: 330,
       margin: "0 auto",
       position: "relative"
     }
@@ -2773,12 +2773,12 @@ function AvatarEditor({
     style: {
       width: "100%",
       aspectRatio: "3 / 4",
-      borderRadius: 16,
-      border: `2px solid ${T.accent}`,
+      borderRadius: 20,
+      border: `4px solid ${T.accent}`,
       outline: adjust ? `2px solid ${T.accent}` : "none",
-      outlineOffset: "3px",
+      outlineOffset: "8px",
       background: img ? T.accentFaint : `linear-gradient(135deg,${T.accentFaint},rgba(255,255,255,0.03))`,
-      boxShadow: `inset 0 0 0 5px ${T.bg}, inset 0 0 0 6px ${T.accentFaint}, ${T.heroGlow || "0 0 40px " + T.accentFaint}, inset 0 0 26px ${T.accentFaint}`,
+      boxShadow: `inset 0 0 0 8px ${T.bg}, inset 0 0 0 10px ${T.accentFaint}, 0 0 0 2px ${T.accent}, 0 0 0 6px ${T.bg}, 0 0 0 7px ${T.borderLight}, ${T.heroGlow || "0 0 40px " + T.accentFaint}, inset 0 0 26px ${T.accentFaint}, 0 10px 30px rgba(0,0,0,0.45)`,
       cursor: img ? adjust ? "grab" : "default" : "pointer",
       overflow: "hidden",
       touchAction: adjust ? "none" : "auto",
@@ -2811,7 +2811,7 @@ function AvatarEditor({
       color: T.accent,
       fontFamily: "'Cinzel',Georgia,serif"
     }
-  }, data.name.charAt(0) || "?"), /*#__PURE__*/React.createElement("div", { style: { position: "absolute", top: 10, left: 10, width: 17, height: 17, borderTop: `2px solid ${T.accent}`, borderLeft: `2px solid ${T.accent}`, borderTopLeftRadius: 4, pointerEvents: "none", zIndex: 2, opacity: 0.9 } }), /*#__PURE__*/React.createElement("div", { style: { position: "absolute", top: 10, right: 10, width: 17, height: 17, borderTop: `2px solid ${T.accent}`, borderRight: `2px solid ${T.accent}`, borderTopRightRadius: 4, pointerEvents: "none", zIndex: 2, opacity: 0.9 } }), !adjust && /*#__PURE__*/React.createElement("div", { style: { position: "absolute", bottom: 10, left: 10, width: 17, height: 17, borderBottom: `2px solid ${T.accent}`, borderLeft: `2px solid ${T.accent}`, borderBottomLeftRadius: 4, pointerEvents: "none", zIndex: 2, opacity: 0.9 } }), !adjust && /*#__PURE__*/React.createElement("div", { style: { position: "absolute", bottom: 10, right: 10, width: 17, height: 17, borderBottom: `2px solid ${T.accent}`, borderRight: `2px solid ${T.accent}`, borderBottomRightRadius: 4, pointerEvents: "none", zIndex: 2, opacity: 0.9 } }), img && adjust && /*#__PURE__*/React.createElement("div", {
+  }, data.name.charAt(0) || "?"), /*#__PURE__*/React.createElement("div", { style: { position: "absolute", top: 10, left: 10, width: 22, height: 22, borderTop: `2px solid ${T.accent}`, borderLeft: `2px solid ${T.accent}`, borderTopLeftRadius: 4, pointerEvents: "none", zIndex: 2, opacity: 0.9 } }), /*#__PURE__*/React.createElement("div", { style: { position: "absolute", top: 10, right: 10, width: 22, height: 22, borderTop: `2px solid ${T.accent}`, borderRight: `2px solid ${T.accent}`, borderTopRightRadius: 4, pointerEvents: "none", zIndex: 2, opacity: 0.9 } }), !adjust && /*#__PURE__*/React.createElement("div", { style: { position: "absolute", bottom: 10, left: 10, width: 22, height: 22, borderBottom: `2px solid ${T.accent}`, borderLeft: `2px solid ${T.accent}`, borderBottomLeftRadius: 4, pointerEvents: "none", zIndex: 2, opacity: 0.9 } }), !adjust && /*#__PURE__*/React.createElement("div", { style: { position: "absolute", bottom: 10, right: 10, width: 22, height: 22, borderBottom: `2px solid ${T.accent}`, borderRight: `2px solid ${T.accent}`, borderBottomRightRadius: 4, pointerEvents: "none", zIndex: 2, opacity: 0.9 } }), img && adjust && /*#__PURE__*/React.createElement("div", {
     style: {
       position: "absolute",
       bottom: 8,
@@ -2917,7 +2917,7 @@ function categorize(sec) {
   if (has(["note", "journal", "session", "log", "quest", "mission", "story", "diary", "campaign", "adventure", "ally", "allies", "npc", "contact", "relationship", "clue", "evidence", "secret"])) return "notes";
   return "other";
 }
-function buildGroups(sections) {
+function buildGroups(sections, catOrder) {
   var map = {};
   var catOf = sections.map(categorize);
   catOf.forEach(function (k, i) {
@@ -2936,7 +2936,13 @@ function buildGroups(sections) {
       return f.confidence === "low";
     })) m.low = true;
   });
-  var cats = CAT_ORDER.map(function (k) {
+  var order = CAT_ORDER.slice();
+  if (catOrder && catOrder.length) {
+    var pri = catOrder.filter(function (k) { return CAT_ORDER.indexOf(k) >= 0; });
+    var rest = CAT_ORDER.filter(function (k) { return pri.indexOf(k) < 0; });
+    order = pri.concat(rest);
+  }
+  var cats = order.map(function (k) {
     return map[k];
   }).filter(function (c) {
     return c && c.members.length > 0;
@@ -3003,7 +3009,9 @@ function HubNav({
   onAddSection,
   menuKey,
   setMenuKey,
-  onDeleteCategory
+  onDeleteCategory,
+  onRenameCategory,
+  onMoveCategory
 }) {
   const cats = group.cats;
   if (activeCat === null) {
@@ -3089,7 +3097,7 @@ function HubNav({
           letterSpacing: 0.5,
           color: T.text
         }
-      }, meta.label), /*#__PURE__*/React.createElement("span", {
+      }, data.catLabels && data.catLabels[cat.key] || meta.label), /*#__PURE__*/React.createElement("span", {
         style: {
           display: "block",
           fontSize: 10,
@@ -3123,6 +3131,9 @@ function HubNav({
         }
       }, "›")), cat.key !== "journal" && /*#__PURE__*/React.createElement(FieldMenu, {
         T: T, k: "cat_" + cat.key, menuKey: menuKey, setMenuKey: setMenuKey,
+        onEdit: () => onRenameCategory(cat),
+        onMoveUp: () => onMoveCategory(cat, -1), onMoveDown: () => onMoveCategory(cat, 1),
+        canUp: cats.findIndex(c => c.key === cat.key) > 0, canDown: cats.findIndex(c => c.key === cat.key) < cats.length - 1,
         onDelete: () => onDeleteCategory(cat), deleteLabel: "Delete category",
         style: { position: "absolute", top: 7, right: 9 }
       }));
@@ -3935,6 +3946,117 @@ function ConfirmDialog({
   }, confirmLabel || "Delete"))));
 }
 
+function RenameModal({
+  T,
+  title,
+  initial,
+  onSave,
+  onClose
+}) {
+  const [v, setV] = useState(initial || "");
+  const r = useRef(null);
+  useEffect(() => {
+    if (r.current) {
+      r.current.focus();
+      r.current.select();
+    }
+  }, []);
+  const save = () => {
+    onSave(v);
+    onClose();
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    onClick: onClose,
+    style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.7)",
+      zIndex: 1300,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: T.surface,
+      border: T.frame || `2px solid ${T.borderLight}`,
+      borderRadius: 16,
+      padding: "22px 20px",
+      maxWidth: 360,
+      width: "100%",
+      boxShadow: `${T.surfaceShadow || ""}, 0 0 30px ${T.accentFaint}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 17,
+      color: T.accent,
+      marginBottom: 14
+    }
+  }, title || "Rename"), /*#__PURE__*/React.createElement("input", {
+    ref: r,
+    value: v,
+    onChange: e => setV(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter") save();
+    },
+    style: {
+      width: "100%",
+      boxSizing: "border-box",
+      fontSize: 16,
+      fontFamily: "'EB Garamond',Georgia,serif",
+      color: T.text,
+      background: T.accentFaint,
+      border: `1px solid ${T.borderLight}`,
+      borderRadius: 10,
+      padding: "11px 13px",
+      outline: "none",
+      marginBottom: 18
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "ss-press",
+    style: {
+      flex: 1,
+      padding: 11,
+      background: "none",
+      border: `1px solid ${T.borderLight}`,
+      borderRadius: 10,
+      cursor: "pointer",
+      color: T.textSoft,
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 14
+    }
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    onClick: save,
+    className: "ss-press",
+    style: {
+      flex: 1,
+      padding: 11,
+      background: T.metalGrad,
+      border: "none",
+      borderRadius: 10,
+      cursor: "pointer",
+      color: T.bg,
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 14
+    }
+  }, "Save"))));
+}
+
 function SectionTitle({
   T,
   value,
@@ -4092,7 +4214,7 @@ function CharacterScreen({
   const [activeCat, setActiveCat] = useState(null);
   const [showVerify, setShowVerify] = useState(false);
   const verifyTotalRef = useRef(0);
-  const group = buildGroups(data.sections);
+  const group = buildGroups(data.sections, data.catOrder);
   const navKeys = [...group.cats.map(c => c.key), "journal"];
   const catPushedRef = useRef(false);
   useEffect(() => {
@@ -4365,6 +4487,7 @@ function CharacterScreen({
   const [editKey, setEditKey] = useState(null);
   const [moveItem, setMoveItem] = useState(null);
   const [confirm, setConfirm] = useState(null);
+  const [renameCat, setRenameCat] = useState(null);
   const askConfirm = (title, message, run, confirmLabel) => setConfirm({ title: title, message: message, confirmLabel: confirmLabel, run: () => { run(); setConfirm(null); } });
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
@@ -4379,6 +4502,33 @@ function CharacterScreen({
     const nFld = members.reduce((a, i) => a + ((data.sections[i] && data.sections[i].fields.length) || 0), 0);
     setMenuKey(null);
     askConfirm("Delete category?", "Are you sure? The “" + label + "” category — " + nSec + " section" + (nSec === 1 ? "" : "s") + " and " + nFld + " field" + (nFld === 1 ? "" : "s") + " — will be permanently deleted.", () => { removeSections(members); showToast('"' + label + '" deleted'); });
+  };
+  const moveCategory = (cat, dir) => {
+    setMenuKey(null);
+    setData(p => {
+      snap(p);
+      const n = JSON.parse(JSON.stringify(p));
+      const order = buildGroups(n.sections, n.catOrder).cats.map(c => c.key);
+      const i = order.indexOf(cat.key);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= order.length) return p;
+      const t = order[i]; order[i] = order[j]; order[j] = t;
+      n.catOrder = order;
+      return n;
+    });
+  };
+  const renameCategory = (cat, name) => {
+    setData(p => {
+      snap(p);
+      const n = JSON.parse(JSON.stringify(p));
+      n.catLabels = n.catLabels || {};
+      if (name && name.trim()) n.catLabels[cat.key] = name.trim();else delete n.catLabels[cat.key];
+      return n;
+    });
+  };
+  const openRenameCategory = cat => {
+    setMenuKey(null);
+    setRenameCat({ cat: cat, current: (data.catLabels && data.catLabels[cat.key]) || (CAT_META[cat.key] || {}).label || cat.label || "" });
   };
   const undoToast = () => { undo(); setToast(null); };
   const doMoveField = ti => {
@@ -4689,6 +4839,8 @@ function CharacterScreen({
     T: T, data: data, from: moveItem, onPick: doMoveField, onClose: () => setMoveItem(null)
   }), confirm && /*#__PURE__*/React.createElement(ConfirmDialog, {
     T: T, title: confirm.title, message: confirm.message, confirmLabel: confirm.confirmLabel, onConfirm: confirm.run, onClose: () => setConfirm(null)
+  }), renameCat && /*#__PURE__*/React.createElement(RenameModal, {
+    T: T, title: "Rename category", initial: renameCat.current, onSave: name => renameCategory(renameCat.cat, name), onClose: () => setRenameCat(null)
   }), /*#__PURE__*/React.createElement("div", {
     ref: swipeRef,
     style: {
@@ -4888,7 +5040,9 @@ function CharacterScreen({
     onAddSection: addSection,
     menuKey: menuKey,
     setMenuKey: setMenuKey,
-    onDeleteCategory: delCategory
+    onDeleteCategory: delCategory,
+    onRenameCategory: openRenameCategory,
+    onMoveCategory: moveCategory
   }), data.sections.map((sec, si) => {
     if (activeCat === null || group.catOf[si] !== activeCat) return null;
     if (verifyOnly && !sec.fields.some(f => f.confidence === "low")) return /*#__PURE__*/React.createElement("div", {
