@@ -1392,7 +1392,6 @@ function HomeScreen({
 }) {
   const [showFallen, setShowFallen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [showTranslate, setShowTranslate] = useState(false);
   const importRef = useRef(null);
   const handleImport = e => {
     const f = e.target.files[0];
@@ -1418,7 +1417,7 @@ function HomeScreen({
     }
   }, /*#__PURE__*/React.createElement(AtmoBg, {
     T: T
-  }), showTranslate && /*#__PURE__*/React.createElement(TranslateModal, { T: T, onClose: () => setShowTranslate(false) }), showHelp && /*#__PURE__*/React.createElement("div", {
+  }), showHelp && /*#__PURE__*/React.createElement("div", {
     onClick: () => setShowHelp(false),
     style: {
       position: "fixed",
@@ -1588,7 +1587,7 @@ function HomeScreen({
       gap: 18,
       position: "relative"
     }
-  }, /*#__PURE__*/React.createElement("div", { style: { alignSelf: "flex-end", display: "flex", gap: 8 } }, /*#__PURE__*/React.createElement("button", { onClick: () => setShowTranslate(true), "aria-label": "Translate", style: { display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: T.accentFaint, border: "1px solid " + T.borderLight, borderRadius: 20, cursor: "pointer" } }, /*#__PURE__*/React.createElement(CatIcon, { name: "globe", size: 16, color: T.accent }), /*#__PURE__*/React.createElement("span", { style: { fontSize: 14, fontWeight: 600, color: T.accent, fontFamily: "'Cinzel',Georgia,serif", letterSpacing: 0.5 } }, "Translate")), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowHelp(true),
     style: {
       alignSelf: "flex-end",
@@ -1623,7 +1622,7 @@ function HomeScreen({
       fontFamily: "'Cinzel',Georgia,serif",
       letterSpacing: 0.5
     }
-  }, "How to Use This App"))), characters.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "How to Use This App")), characters.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -3874,122 +3873,6 @@ function Toast({
   }, "↶ Undo"));
 }
 
-function TranslateModal({
-  T,
-  onClose
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    onClick: onClose,
-    style: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0,0,0,0.7)",
-      zIndex: 1000,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 20
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    onClick: e => e.stopPropagation(),
-    style: {
-      background: T.surface,
-      border: T.frame || `2px solid ${T.borderLight}`,
-      outline: T.frameInset,
-      outlineOffset: "-6px",
-      borderRadius: 16,
-      padding: "24px 22px",
-      maxWidth: 380,
-      width: "100%",
-      boxShadow: `${T.surfaceShadow}, 0 0 30px ${T.accentFaint}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement(CatIcon, {
-    name: "globe",
-    size: 22,
-    color: T.accent
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: "'Cinzel',Georgia,serif",
-      fontWeight: 700,
-      fontSize: 18,
-      color: T.accent
-    }
-  }, "Read in your language")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 15,
-      color: T.textSoft,
-      lineHeight: 1.6
-    }
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      margin: "0 0 10px"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    translate: "no"
-  }, "SheetSnap"), " can be shown in your language using your device's built-in translation:"), /*#__PURE__*/React.createElement("p", {
-    style: {
-      margin: "0 0 8px"
-    }
-  }, /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: T.accent
-    }
-  }, "Android / Chrome"), " — tap the ⋮ menu, then ", /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: T.accent
-    }
-  }, "Translate"), "."), /*#__PURE__*/React.createElement("p", {
-    style: {
-      margin: "0 0 10px"
-    }
-  }, /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: T.accent
-    }
-  }, "iPhone / Safari"), " — tap ", /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: T.accent
-    }
-  }, "aA"), " in the address bar, then ", /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: T.accent
-    }
-  }, "Translate"), "."), /*#__PURE__*/React.createElement("p", {
-    style: {
-      margin: 0,
-      fontSize: 13,
-      color: T.textMuted
-    }
-  }, "Your character names and brand names stay as written.")), /*#__PURE__*/React.createElement("button", {
-    onClick: onClose,
-    className: "ss-press",
-    style: {
-      display: "block",
-      width: "100%",
-      marginTop: 18,
-      padding: 12,
-      background: T.metalGrad,
-      border: "none",
-      borderRadius: 10,
-      cursor: "pointer",
-      color: T.bg,
-      fontFamily: "'Cinzel',Georgia,serif",
-      fontWeight: 700,
-      fontSize: 15
-    }
-  }, "Got It")));
-}
-
 function CharacterScreen({
   T,
   character,
@@ -4006,7 +3889,6 @@ function CharacterScreen({
   const noteRef = useRef(null);
   const [editing, setEditing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [showTranslate, setShowTranslate] = useState(false);
   const [undoStack, setUndoStack] = useState([]);
   const [verifyOnly, setVerifyOnly] = useState(false);
   const [activeSec, setActiveSec] = useState(0);
@@ -4291,7 +4173,7 @@ function CharacterScreen({
     }
   }, /*#__PURE__*/React.createElement(AtmoBg, {
     T: T
-  }), showTranslate && /*#__PURE__*/React.createElement(TranslateModal, { T: T, onClose: () => setShowTranslate(false) }), showHelp && /*#__PURE__*/React.createElement("div", {
+  }), showHelp && /*#__PURE__*/React.createElement("div", {
     onClick: () => setShowHelp(false),
     style: {
       position: "fixed",
@@ -4525,7 +4407,7 @@ function CharacterScreen({
       boxShadow: `0 1px 4px rgba(0,0,0,0.3)`,
       marginRight: 2
     }
-  }, "?"), /*#__PURE__*/React.createElement("button", { onClick: () => setShowTranslate(true), "aria-label": "Translate", style: { width: 26, height: 26, borderRadius: "50%", border: "none", background: T.metalGrad, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 1px 4px rgba(0,0,0,0.3)", marginRight: 2 } }, /*#__PURE__*/React.createElement(CatIcon, { name: "globe", size: 14, color: T.headerText || T.bg })), /*#__PURE__*/React.createElement("div", {
+  }, "?"), /*#__PURE__*/React.createElement("div", {
     style: {
       width: 1,
       height: 16,
