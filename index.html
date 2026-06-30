@@ -3839,6 +3839,93 @@ function MoveModal({
   }, "Cancel")));
 }
 
+function ConfirmDialog({
+  T,
+  title,
+  message,
+  confirmLabel,
+  onConfirm,
+  onClose
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    onClick: onClose,
+    style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.7)",
+      zIndex: 1300,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: T.surface,
+      border: T.frame || `2px solid ${T.borderLight}`,
+      borderRadius: 16,
+      padding: "22px 20px",
+      maxWidth: 340,
+      width: "100%",
+      boxShadow: `${T.surfaceShadow || ""}, 0 0 30px ${T.accentFaint}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 17,
+      color: T.accent,
+      marginBottom: 8
+    }
+  }, title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      color: T.textSoft,
+      lineHeight: 1.55,
+      marginBottom: 20
+    }
+  }, message), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "ss-press",
+    style: {
+      flex: 1,
+      padding: 11,
+      background: "none",
+      border: `1px solid ${T.borderLight}`,
+      borderRadius: 10,
+      cursor: "pointer",
+      color: T.textSoft,
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 14
+    }
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    onClick: onConfirm,
+    className: "ss-press",
+    style: {
+      flex: 1,
+      padding: 11,
+      background: "#a3402a",
+      border: "none",
+      borderRadius: 10,
+      cursor: "pointer",
+      color: "#fff",
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 14
+    }
+  }, confirmLabel || "Delete"))));
+}
+
 function SectionTitle({
   T,
   value,
@@ -4258,11 +4345,14 @@ function CharacterScreen({
   const [menuKey, setMenuKey] = useState(null);
   const [editKey, setEditKey] = useState(null);
   const [moveItem, setMoveItem] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+  const askConfirm = (title, message, run, confirmLabel) => setConfirm({ title: title, message: message, confirmLabel: confirmLabel, run: () => { run(); setConfirm(null); } });
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
   const showToast = m => { setToast(m); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 4500); };
-  const delField = (si, fi) => { const sec = data.sections[si]; const lbl = sec && sec.fields[fi] ? sec.fields[fi].label : "Field"; removeField(si, fi); setMenuKey(null); showToast('"' + lbl + '" deleted'); };
-  const delSection = si => { const sec = data.sections[si]; const lbl = sec ? sec.title : "Section"; removeSection(si); setMenuKey(null); showToast('"' + lbl + '" deleted'); };
+  const delField = (si, fi) => { const sec = data.sections[si]; const lbl = sec && sec.fields[fi] ? sec.fields[fi].label : "Field"; setMenuKey(null); askConfirm("Delete field?", "Are you sure? “" + lbl + "” will be deleted.", () => { removeField(si, fi); showToast('"' + lbl + '" deleted'); }); };
+  const delSection = si => { const sec = data.sections[si]; const lbl = sec ? sec.title : "Section"; const n = sec ? sec.fields.length : 0; setMenuKey(null); askConfirm("Remove section?", "Are you sure? All content in “" + lbl + "” (" + n + " item" + (n === 1 ? "" : "s") + ") will be deleted.", () => { removeSection(si); showToast('"' + lbl + '" deleted'); }); };
+  const delNote = nid => askConfirm("Delete note?", "Are you sure? This session note will be deleted.", () => removeNote(nid));
   const undoToast = () => { undo(); setToast(null); };
   const doMoveField = ti => {
     if (!moveItem) return;
@@ -4570,6 +4660,8 @@ function CharacterScreen({
     T: T, msg: toast, onUndo: undoToast
   }), moveItem && /*#__PURE__*/React.createElement(MoveModal, {
     T: T, data: data, from: moveItem, onPick: doMoveField, onClose: () => setMoveItem(null)
+  }), confirm && /*#__PURE__*/React.createElement(ConfirmDialog, {
+    T: T, title: confirm.title, message: confirm.message, confirmLabel: confirm.confirmLabel, onConfirm: confirm.run, onClose: () => setConfirm(null)
   }), /*#__PURE__*/React.createElement("div", {
     ref: swipeRef,
     style: {
@@ -5267,7 +5359,7 @@ function CharacterScreen({
       lineHeight: 1.5
     }
   }, note.text)), /*#__PURE__*/React.createElement("button", {
-    onClick: () => removeNote(note.id),
+    onClick: () => delNote(note.id),
     style: {
       background: "none",
       border: "none",
@@ -5381,6 +5473,8 @@ function SheetSnap() {
   useEffect(() => { try { document.documentElement.style.colorScheme = kbScheme(THEMES[themeKey] || {}); } catch (_) {} }, [themeKey]);
   const [characters, setCharacters] = useState([]);
   const [fallenHeroes, setFallenHeroes] = useState([]);
+  const [appConfirm, setAppConfirm] = useState(null);
+  const askAppConfirm = (title, message, run) => setAppConfirm({ title: title, message: message, run: () => { run(); setAppConfirm(null); } });
   const [activeCharIdx, setActiveCharIdx] = useState(null);
   const [activeIsFallen, setActiveIsFallen] = useState(false);
   const [captureImages, setCaptureImages] = useState([]);
@@ -5474,7 +5568,7 @@ function SheetSnap() {
   const handleSaveChar = d => {
     if (activeIsFallen) setFallenHeroes(p => p.map((c, i) => i === activeCharIdx ? d : c));else setCharacters(p => p.map((c, i) => i === activeCharIdx ? d : c));
   };
-  const handleDeleteChar = idx => setCharacters(p => p.filter((_, i) => i !== idx));
+  const handleDeleteChar = idx => { const c = characters[idx]; const nm = c ? (c.name || "this character") : "this character"; askAppConfirm("Delete character?", "Are you sure? All content for “" + nm + "” will be permanently deleted.", () => setCharacters(p => p.filter((_, i) => i !== idx))); };
   const handleArchiveChar = idx => {
     const c = characters[idx];
     setFallenHeroes(p => [...p, {
@@ -5491,7 +5585,7 @@ function SheetSnap() {
     setCharacters(p => [...p, c]);
     setFallenHeroes(p => p.filter((_, i) => i !== idx));
   };
-  const handleDeleteFallen = idx => setFallenHeroes(p => p.filter((_, i) => i !== idx));
+  const handleDeleteFallen = idx => { const c = fallenHeroes[idx]; const nm = c ? (c.name || "this character") : "this character"; askAppConfirm("Delete character?", "Are you sure? “" + nm + "” will be permanently deleted from Fallen Heroes.", () => setFallenHeroes(p => p.filter((_, i) => i !== idx))); };
   const handleImport = charData => {
     const nc = [...characters, charData];
     setCharacters(nc);
@@ -5514,7 +5608,9 @@ function SheetSnap() {
     T: THEMES.parchment,
     size: 32
   }));
-  return /*#__PURE__*/React.createElement("div", null, store._full && /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("div", null, appConfirm && /*#__PURE__*/React.createElement(ConfirmDialog, {
+    T: T, title: appConfirm.title, message: appConfirm.message, onConfirm: appConfirm.run, onClose: () => setAppConfirm(null)
+  }), store._full && /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "10px 16px",
       background: "rgba(217,79,79,0.15)",
