@@ -2879,7 +2879,7 @@ var CAT_META = {
     icon: "skills"
   },
   magic: {
-    label: "Magic",
+    label: "Powers",
     icon: "magic"
   },
   inventory: {
@@ -2887,7 +2887,7 @@ var CAT_META = {
     icon: "inventory"
   },
   notes: {
-    label: "Notes & Lore",
+    label: "Notes",
     icon: "notes"
   },
   other: {
@@ -2911,8 +2911,8 @@ function categorize(sec) {
   if (has(["hit point", "hit-point", "health", "wound", "vital", "s.d.c", "sdc", "experience", "xp", "attribute", "ability score", "characteristic", "resource"])) return "vitals";
   if (has(["skill", "proficien", "talent", "feat", "expertise", "lore", "craft", "profession", "knowledge"])) return "skills";
   if (has(["inventor", "equipment", "gear", "item", "possession", "treasure", "loot", "wealth", "money", "currency", "coin", "pack", "belonging", "consumable", "ammo", "ammunition", "container"])) return "inventory";
-  if (has(["spell", "cantrip", "magic", "incantation", "slot", "psionic", "power", "prayer", "domain", "ritual", "arcane", "divine", "sorcery", "invocation", "mystic"])) return "magic";
-  if (has(["note", "journal", "session", "log", "quest", "mission", "story", "diary", "campaign", "adventure", "ally", "allies", "npc", "contact", "relationship"])) return "notes";
+  if (has(["spell", "cantrip", "magic", "incantation", "slot", "psionic", "psychic", "power", "prayer", "domain", "ritual", "arcane", "divine", "sorcery", "invocation", "mystic", "mutation", "mutant", "cyber", "bionic", "gadget", "hex", "miracle", "superpower", "occult", "supernatural", "discipline", "augment"])) return "magic";
+  if (has(["note", "journal", "session", "log", "quest", "mission", "story", "diary", "campaign", "adventure", "ally", "allies", "npc", "contact", "relationship", "clue", "evidence", "secret"])) return "notes";
   return "other";
 }
 function buildGroups(sections) {
@@ -3629,6 +3629,7 @@ function FieldMenu({
   onEdit,
   onMoveUp,
   onMoveDown,
+  onMoveToSection,
   onDelete,
   canUp,
   canDown,
@@ -3733,9 +3734,109 @@ function FieldMenu({
   }), item(canDown, "↓", "Move down", () => {
     onMoveDown();
     setMenuKey(null);
+  }), onMoveToSection && item(true, "⇄", "Move to section…", () => {
+    onMoveToSection();
+    setMenuKey(null);
   }), item(true, "✕", "Delete", () => {
     onDelete();
   }, true)));
+}
+
+function MoveModal({
+  T,
+  data,
+  from,
+  onPick,
+  onClose
+}) {
+  const sec = data.sections[from.si];
+  const field = sec && sec.fields[from.fi];
+  const others = [];
+  data.sections.forEach((s, i) => {
+    if (i !== from.si) others.push({
+      s: s,
+      i: i
+    });
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    onClick: onClose,
+    style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.7)",
+      zIndex: 1200,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: T.surface,
+      border: T.frame || `2px solid ${T.borderLight}`,
+      borderRadius: 16,
+      padding: "20px 18px",
+      maxWidth: 360,
+      width: "100%",
+      maxHeight: "80vh",
+      overflowY: "auto",
+      boxShadow: `${T.surfaceShadow || ""}, 0 0 30px ${T.accentFaint}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 17,
+      color: T.accent,
+      marginBottom: 4
+    }
+  }, "Move to section"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: T.textMuted,
+      marginBottom: 14
+    }
+  }, field ? `Moving “${field.label}”` : "Choose a section"), others.map(o => /*#__PURE__*/React.createElement("button", {
+    key: o.i,
+    onClick: () => onPick(o.i),
+    className: "ss-press",
+    style: {
+      display: "block",
+      width: "100%",
+      textAlign: "left",
+      padding: "12px 14px",
+      marginBottom: 8,
+      background: T.cardGrad || T.accentFaint,
+      border: `1px solid ${T.borderLight}`,
+      borderLeft: `3px solid ${T.accent}`,
+      borderRadius: "0 10px 10px 0",
+      cursor: "pointer",
+      color: T.text,
+      fontFamily: "Georgia,serif",
+      fontSize: 15
+    }
+  }, o.s.title || "Untitled section")), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "ss-press",
+    style: {
+      display: "block",
+      width: "100%",
+      marginTop: 6,
+      padding: 11,
+      background: "none",
+      border: `1px solid ${T.borderLight}`,
+      borderRadius: 10,
+      cursor: "pointer",
+      color: T.textSoft,
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 14
+    }
+  }, "Cancel")));
 }
 
 function SectionTitle({
@@ -4064,6 +4165,15 @@ function CharacterScreen({
       return n;
     });
   };
+  const moveFieldToSection = (si, fi, ti) => {
+    setData(p => {
+      snap(p);
+      const n = JSON.parse(JSON.stringify(p));
+      const fld = n.sections[si].fields.splice(fi, 1)[0];
+      n.sections[ti].fields.push(fld);
+      return n;
+    });
+  };
   const addField = si => {
     setData(p => {
       snap(p);
@@ -4147,12 +4257,23 @@ function CharacterScreen({
   };
   const [menuKey, setMenuKey] = useState(null);
   const [editKey, setEditKey] = useState(null);
+  const [moveItem, setMoveItem] = useState(null);
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
   const showToast = m => { setToast(m); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 4500); };
   const delField = (si, fi) => { const sec = data.sections[si]; const lbl = sec && sec.fields[fi] ? sec.fields[fi].label : "Field"; removeField(si, fi); setMenuKey(null); showToast('"' + lbl + '" deleted'); };
   const delSection = si => { const sec = data.sections[si]; const lbl = sec ? sec.title : "Section"; removeSection(si); setMenuKey(null); showToast('"' + lbl + '" deleted'); };
   const undoToast = () => { undo(); setToast(null); };
+  const doMoveField = ti => {
+    if (!moveItem) return;
+    const sec = data.sections[moveItem.si];
+    const lbl = sec && sec.fields[moveItem.fi] ? sec.fields[moveItem.fi].label : "Field";
+    const tname = data.sections[ti] ? (data.sections[ti].title || "section") : "section";
+    moveFieldToSection(moveItem.si, moveItem.fi, ti);
+    setMoveItem(null);
+    setMenuKey(null);
+    showToast('"' + lbl + '" moved to "' + tname + '"');
+  };
   const getSectionStyle = sec => {
     if (sec.fields.length <= 10 && sec.fields.every(f => !f.value.includes("%") && f.value.length < 8 && f.label.length < 14)) return "grid";
     if (sec.fields.some(f => f.value.includes("%"))) return "skills";
@@ -4235,7 +4356,7 @@ function CharacterScreen({
       color: T.textSoft,
       lineHeight: 1.6
     }
-  }, /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", null, hb(T, "The hub"), " — Your character opens to a hub: a large portrait and a set of category cards (Combat, Magic, Skills, and more). Tap a card to open that group, then tap ", hb(T, "‹ All Sections"), " or ", hb(T, "Back"), " to return. You can also swipe left or right to move between groups."), /*#__PURE__*/React.createElement("div", null, hb(T, "Double-check"), " — If the scan wasn't fully sure about some fields, a ", hb(T, "Double-check"), " card appears at the top. Tap it to review each flagged value and confirm or fix it. An ", /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", null, hb(T, "The hub"), " — Your character opens to a hub: a large portrait and a set of category cards (Combat, Powers, Skills, and more). Tap a card to open that group, then tap ", hb(T, "‹ All Sections"), " or ", hb(T, "Back"), " to return. You can also swipe left or right to move between groups."), /*#__PURE__*/React.createElement("div", null, hb(T, "Double-check"), " — If the scan wasn't fully sure about some fields, a ", hb(T, "Double-check"), " card appears at the top. Tap it to review each flagged value and confirm or fix it. An ", /*#__PURE__*/React.createElement("span", {
     style: {
       color: T.yellow
     }
@@ -4243,7 +4364,7 @@ function CharacterScreen({
     style: {
       color: T.green
     }
-  }, "green"), " means it was read clearly."), /*#__PURE__*/React.createElement("div", null, hb(T, "Editing a field"), " — Tap the ", hb(T, "⋮"), " next to a field, then ", hb(T, "Edit"), ", to change its name or value. Requiring Edit first keeps you from changing things by accident while scrolling. The same ⋮ menu also has ", hb(T, "Move up / down"), " and ", hb(T, "Delete"), " — and a deleted field can be brought back with ", hb(T, "Undo"), "."), /*#__PURE__*/React.createElement("div", null, hb(T, "Adding"), " — Use ", hb(T, "+ Add Field"), " at the bottom of any section, or the ", hb(T, "+ Add Section"), " card on the hub."), /*#__PURE__*/React.createElement("div", null, hb(T, "Portrait"), " — Tap ", hb(T, "Adjust photo"), " under the portrait to drag it, pinch or use ± to zoom, or replace it. Tap ", hb(T, "✓ Done"), " to lock it so it won't move while you scroll."), /*#__PURE__*/React.createElement("div", null, hb(T, "Themes"), " — The colored circles in the top bar restyle the whole sheet."), /*#__PURE__*/React.createElement("div", null, hb(T, "Journal"), " — The ", hb(T, "Journal"), " card logs session notes, exports a backup file, and can archive the character."), /*#__PURE__*/React.createElement("div", null, hb(T, "Auto-saved"), " — Your changes save automatically, and an ", hb(T, "Undo"), " button appears after any edit."))), /*#__PURE__*/React.createElement("button", {
+  }, "green"), " means it was read clearly."), /*#__PURE__*/React.createElement("div", null, hb(T, "Editing a field"), " — Tap the ", hb(T, "⋮"), " next to a field, then ", hb(T, "Edit"), ", to change its name or value. Requiring Edit first keeps you from changing things by accident while scrolling. The same ⋮ menu also has ", hb(T, "Move up / down"), ", ", hb(T, "Move to section…"), " (to send a field to a different group), and ", hb(T, "Delete"), " — and a deleted field can be brought back with ", hb(T, "Undo"), "."), /*#__PURE__*/React.createElement("div", null, hb(T, "Adding"), " — Use ", hb(T, "+ Add Field"), " at the bottom of any section, or the ", hb(T, "+ Add Section"), " card on the hub."), /*#__PURE__*/React.createElement("div", null, hb(T, "Portrait"), " — Tap ", hb(T, "Adjust photo"), " under the portrait to drag it, pinch or use ± to zoom, or replace it. Tap ", hb(T, "✓ Done"), " to lock it so it won't move while you scroll."), /*#__PURE__*/React.createElement("div", null, hb(T, "Themes"), " — The colored circles in the top bar restyle the whole sheet."), /*#__PURE__*/React.createElement("div", null, hb(T, "Journal"), " — The ", hb(T, "Journal"), " card logs session notes, exports a backup file, and can archive the character."), /*#__PURE__*/React.createElement("div", null, hb(T, "Auto-saved"), " — Your changes save automatically, and an ", hb(T, "Undo"), " button appears after any edit."))), /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowHelp(false),
     className: "ss-press",
     style: {
@@ -4447,6 +4568,8 @@ function CharacterScreen({
     }));
   }))), /*#__PURE__*/React.createElement(Toast, {
     T: T, msg: toast, onUndo: undoToast
+  }), moveItem && /*#__PURE__*/React.createElement(MoveModal, {
+    T: T, data: data, from: moveItem, onPick: doMoveField, onClose: () => setMoveItem(null)
   }), /*#__PURE__*/React.createElement("div", {
     ref: swipeRef,
     style: {
@@ -4780,7 +4903,7 @@ function CharacterScreen({
       }
     }, /*#__PURE__*/React.createElement(FieldMenu, {
       T: T, k: "f" + si + "_" + fi, menuKey: menuKey, setMenuKey: setMenuKey, onEdit: () => setEditKey("f" + si + "_" + fi),
-      onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1),
+      onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1), onMoveToSection: data.sections.length > 1 ? (() => setMoveItem({ si: si, fi: fi })) : null,
       onDelete: () => delField(si, fi), canUp: fi > 0, canDown: fi < sec.fields.length - 1,
       style: { position: "absolute", top: 4, right: 4 }
     }), /*#__PURE__*/React.createElement(EditableLabel, {
@@ -4863,7 +4986,7 @@ function CharacterScreen({
         }
       }), /*#__PURE__*/React.createElement(FieldMenu, {
         T: T, k: "f" + si + "_" + fi, menuKey: menuKey, setMenuKey: setMenuKey, onEdit: () => setEditKey("f" + si + "_" + fi),
-        onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1),
+        onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1), onMoveToSection: data.sections.length > 1 ? (() => setMoveItem({ si: si, fi: fi })) : null,
         onDelete: () => delField(si, fi), canUp: fi > 0, canDown: fi < sec.fields.length - 1
       }))), isPct && /*#__PURE__*/React.createElement("div", {
         style: {
@@ -4935,7 +5058,7 @@ function CharacterScreen({
         }
       }), /*#__PURE__*/React.createElement(FieldMenu, {
         T: T, k: "f" + si + "_" + fi, menuKey: menuKey, setMenuKey: setMenuKey, onEdit: () => setEditKey("f" + si + "_" + fi),
-        onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1),
+        onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1), onMoveToSection: data.sections.length > 1 ? (() => setMoveItem({ si: si, fi: fi })) : null,
         onDelete: () => delField(si, fi), canUp: fi > 0, canDown: fi < sec.fields.length - 1,
         style: { marginLeft: 2 }
       }));
@@ -4978,7 +5101,7 @@ function CharacterScreen({
       T: T
     })), /*#__PURE__*/React.createElement(FieldMenu, {
       T: T, k: "f" + si + "_" + fi, menuKey: menuKey, setMenuKey: setMenuKey, onEdit: () => setEditKey("f" + si + "_" + fi),
-      onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1),
+      onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1), onMoveToSection: data.sections.length > 1 ? (() => setMoveItem({ si: si, fi: fi })) : null,
       onDelete: () => delField(si, fi), canUp: fi > 0, canDown: fi < sec.fields.length - 1,
       style: { marginTop: 4 }
     })))), /*#__PURE__*/React.createElement("button", {
