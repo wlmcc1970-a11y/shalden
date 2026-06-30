@@ -5472,6 +5472,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.c
             }
           });
         });
+        document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&navigator.serviceWorker.controller){reg.update().then(function(){if(reg.waiting){showUpdate(function(){reg.waiting.postMessage({type:'SKIP_WAITING'});});}}).catch(function(){});}});
       }).catch(function(err){console.error('SheetSnap SW registration failed',err);});
       var refreshing=false;
       navigator.serviceWorker.addEventListener('controllerchange',function(){
