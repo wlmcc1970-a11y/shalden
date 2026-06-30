@@ -46,6 +46,7 @@ input,button{font-family:inherit}
 <style id="ss-chassis">
 #root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 #root{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
 #root input,#root textarea,#root select,#root [contenteditable="true"]{-webkit-user-select:text;-moz-user-select:text;user-select:text;-webkit-touch-callout:default}
 #ssInstall{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%);z-index:9000;display:none;align-items:center;gap:8px;padding:11px 20px;border:1px solid #D4A843;border-radius:24px;background:linear-gradient(135deg,#1a1620,#0A0A0C);color:#D4A843;font-family:'Cinzel',Georgia,serif;font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;box-shadow:0 6px 22px rgba(0,0,0,.5),0 0 14px rgba(212,168,67,.25)}
 #ssInstall.show{display:inline-flex;animation:ssRise .35s ease}
@@ -429,6 +430,8 @@ function downscaleImage(dataUrl, maxDim = 1568, quality = 0.82) {
 }
 
 /* ━━━━ STORAGE ━━━━ */
+/* P1 haptics: subtle, sparing vibration on key moments (Android; iOS safely ignores) */
+function buzz(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(_){}}
 const store = {
   get: k => {
     try {
@@ -2429,7 +2432,7 @@ function ProcessingScreen({
           })
         })).filter(s => s.fields.length > 0);
         if (!parsed.sections.length) throw new Error("No readable sections found");
-        setTimeout(() => onComplete(parsed), 800);
+        setTimeout(() => { buzz([12, 45, 18]); onComplete(parsed); }, 800);
       } catch (err) {
         setError(err.message);
       }
@@ -3980,7 +3983,7 @@ function ConfirmDialog({
       fontSize: 14
     }
   }, "Cancel"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => { if (Date.now() - t0.current > 350) onConfirm(); },
+    onClick: () => { if (Date.now() - t0.current > 350) { buzz(15); onConfirm(); } },
     className: "ss-press",
     style: {
       flex: 1,
@@ -4591,7 +4594,7 @@ function CharacterScreen({
     setMenuKey(null);
     setRenameCat({ cat: cat, current: (data.catLabels && data.catLabels[cat.key]) || (CAT_META[cat.key] || {}).label || cat.label || "" });
   };
-  const undoToast = () => { undo(); setToast(null); };
+  const undoToast = () => { buzz(10); undo(); setToast(null); };
   const doMoveField = ti => {
     if (!moveItem) return;
     const sec = data.sections[moveItem.si];
@@ -5951,7 +5954,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.c
 })();
 </script>
 <button id="ss-sync-btn" aria-label="Cloud sync" style="position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:99999;min-height:40px;padding:.5rem .8rem;border:1px solid #D4A843;border-radius:20px;background:#0A0A0C;color:#D4A843;font:600 13px 'Josefin Sans',system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.4);cursor:pointer;">&#9729; Sign in to sync</button>
-<div id="ss-build" style="position:fixed;left:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:99999;font:700 11px system-ui,sans-serif;color:#D4A843;opacity:.75;pointer-events:none;letter-spacing:.5px;">v22</div>
+<div id="ss-build" style="position:fixed;left:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:99999;font:700 11px system-ui,sans-serif;color:#D4A843;opacity:.75;pointer-events:none;letter-spacing:.5px;">v23</div>
 <script>/*Shalden Edition cloud sync — reuses DigiRune twisted-companion Firebase project*/
 (function(){
  var FB="https://www.gstatic.com/firebasejs/10.12.2/";
