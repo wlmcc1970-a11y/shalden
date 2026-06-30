@@ -3689,6 +3689,8 @@ function FieldMenu({
 }) {
   const open = menuKey === k;
   const [pos, setPos] = useState(null);
+  const openedAt = useRef(0);
+  useEffect(() => { if (open) openedAt.current = Date.now(); }, [open]);
   const W = 168;
   const toggle = e => {
     e.stopPropagation();
@@ -3753,7 +3755,7 @@ function FieldMenu({
   }, "⋮"), open && pos && /*#__PURE__*/React.createElement("div", {
     onClick: e => {
       e.stopPropagation();
-      setMenuKey(null);
+      if (Date.now() - openedAt.current > 350) setMenuKey(null);
     },
     style: {
       position: "fixed",
@@ -3949,7 +3951,7 @@ function ConfirmDialog({
       gap: 10
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: onClose,
+    onClick: () => { if (Date.now() - t0.current > 350) onClose(); },
     className: "ss-press",
     style: {
       flex: 1,
@@ -3964,7 +3966,7 @@ function ConfirmDialog({
       fontSize: 14
     }
   }, "Cancel"), /*#__PURE__*/React.createElement("button", {
-    onClick: onConfirm,
+    onClick: () => { if (Date.now() - t0.current > 350) onConfirm(); },
     className: "ss-press",
     style: {
       flex: 1,
