@@ -792,13 +792,17 @@ const CheckIcon = () => /*#__PURE__*/React.createElement("svg", {
 const Dot = ({
   c,
   T,
-  s
+  s,
+  onVerify
 }) => {
   const low = c === "low";
+  const clickable = low && !!onVerify;
   return /*#__PURE__*/React.createElement("span", {
-    role: "img",
-    "aria-label": low ? "Low confidence — please verify" : "High confidence",
-    title: low ? "Low confidence — please verify" : "High confidence",
+    role: clickable ? "button" : "img",
+    tabIndex: clickable ? 0 : undefined,
+    "aria-label": low ? (clickable ? "Low confidence — tap to mark verified" : "Low confidence — please verify") : "High confidence",
+    title: low ? (clickable ? "Tap to mark this verified" : "Low confidence — please verify") : "High confidence",
+    onClick: clickable ? (e => { e.stopPropagation(); onVerify(); }) : undefined,
     style: {
       display: "inline-block",
       width: 9,
@@ -808,6 +812,7 @@ const Dot = ({
       background: low ? "transparent" : T.green,
       border: low ? `2px solid ${T.yellow}` : `1px solid ${T.green}`,
       flexShrink: 0,
+      cursor: clickable ? "pointer" : undefined,
       ...s
     }
   });
@@ -2578,400 +2583,6 @@ function ProcessingScreen({
   })));
 }
 
-/* ━━━━ SECTION BLOCK ━━━━ */
-function SectionBlock({
-  sec,
-  si,
-  style,
-  T,
-  editing,
-  updateField,
-  removeField,
-  moveField,
-  addField,
-  updateSectionTitle,
-  removeSection,
-  moveSection,
-  totalSections,
-  isOpen,
-  onToggle
-}) {
-  const [editTitle, setEditTitle] = useState(false);
-  const [titleDraft, setTitleDraft] = useState(sec.title);
-  const titleRef = useRef(null);
-  useEffect(() => {
-    if (editTitle && titleRef.current) titleRef.current.focus();
-  }, [editTitle]);
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: T.surface,
-      borderRadius: 14,
-      border: `1px solid ${T.border}`,
-      borderLeft: `3px solid ${T.accent}`,
-      overflow: "hidden",
-      boxShadow: `0 2px 12px ${T.accentFaint}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      padding: "13px 16px",
-      gap: 6,
-      position: "relative"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      bottom: 0,
-      left: 16,
-      right: 16,
-      height: 1,
-      background: T.sectionRule
-    }
-  }), editing && /*#__PURE__*/React.createElement(MoveButtons, {
-    T: T,
-    si: 0,
-    fi: si,
-    total: totalSections,
-    moveField: (_, i, dir) => moveSection(i, dir)
-  }), /*#__PURE__*/React.createElement("button", {
-    onClick: onToggle,
-    style: {
-      flex: 1,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: 0
-    }
-  }, editTitle ? /*#__PURE__*/React.createElement("input", {
-    ref: titleRef,
-    value: titleDraft,
-    onChange: e => setTitleDraft(e.target.value),
-    onBlur: () => {
-      updateSectionTitle(si, titleDraft);
-      setEditTitle(false);
-    },
-    onKeyDown: e => {
-      if (e.key === "Enter") {
-        updateSectionTitle(si, titleDraft);
-        setEditTitle(false);
-      }
-    },
-    onClick: e => e.stopPropagation(),
-    style: {
-      fontSize: 16,
-      fontWeight: 700,
-      color: T.accent,
-      fontFamily: "'Cinzel',Georgia,serif",
-      background: T.accentFaint,
-      border: `1px solid ${T.borderLight}`,
-      borderRadius: 4,
-      padding: "2px 8px",
-      outline: "none",
-      width: "100%"
-    }
-  }) : /*#__PURE__*/React.createElement("span", {
-    onDoubleClick: e => {
-      if (editing) {
-        e.stopPropagation();
-        setEditTitle(true);
-      }
-    },
-    style: {
-      fontSize: 15,
-      fontWeight: 700,
-      color: T.accent,
-      fontFamily: "'Cinzel',Georgia,serif",
-      letterSpacing: 1.5,
-      textShadow: T.titleShadow
-    }
-  }, sec.title), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 14,
-      color: T.accentDim,
-      flexShrink: 0,
-      marginLeft: 8
-    }
-  }, sec.fields.length, " ", isOpen ? "▾" : "▸")), editing && /*#__PURE__*/React.createElement("button", {
-    onClick: () => removeSection(si),
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: "2px 4px",
-      fontSize: 14,
-      color: T.textMuted,
-      flexShrink: 0
-    }
-  }, "\u2715")), isOpen && /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "0 16px 16px",
-      animation: "fadeIn 0.2s ease"
-    }
-  }, style === "grid" && /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: 10
-    }
-  }, sec.fields.map((f, fi) => /*#__PURE__*/React.createElement("div", {
-    key: f.id,
-    className: "ss-card",
-    style: {
-      flex: "1 1 22%",
-      minWidth: 74,
-      background: T.cardGrad,
-      border: `1px solid ${T.borderLight}`,
-      borderTop: `2.5px solid ${T.accent}`,
-      borderRadius: 12,
-      padding: "13px 8px 11px",
-      textAlign: "center",
-      position: "relative",
-      display: "flex",
-      flexDirection: "column",
-      gap: 3,
-      boxShadow: T.cardShadow
-    }
-  }, editing && /*#__PURE__*/React.createElement("button", {
-    onClick: () => removeField(si, fi),
-    style: {
-      position: "absolute",
-      top: 2,
-      right: 4,
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      fontSize: 11,
-      color: T.textMuted
-    }
-  }, "\u2715"), /*#__PURE__*/React.createElement(EditableLabel, {
-    value: f.label,
-    onChange: v => updateField(si, fi, "label", v),
-    T: T
-  }), /*#__PURE__*/React.createElement(EditableValue, {
-    value: f.value,
-    onChange: v => updateField(si, fi, "value", v),
-    T: T,
-    style: {
-      fontSize: 28,
-      fontWeight: 700,
-      fontFamily: "'Cinzel',Georgia,serif",
-      display: "block",
-      textAlign: "center",
-      borderBottom: "none",
-      color: T.accent,
-      textShadow: `0 0 12px ${T.accentFaint}`
-    }
-  })))), style === "skills" && sec.fields.map((f, fi) => {
-    const pct = parseInt(f.value);
-    const isPct = !isNaN(pct) && f.value.includes("%");
-    return /*#__PURE__*/React.createElement("div", {
-      key: f.id,
-      style: {
-        padding: "5px 0"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 2
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 4,
-        flex: 1
-      }
-    }, editing && /*#__PURE__*/React.createElement(MoveButtons, {
-      T: T,
-      si: si,
-      fi: fi,
-      total: sec.fields.length,
-      moveField: moveField
-    }), /*#__PURE__*/React.createElement(Dot, {
-      c: f.confidence,
-      T: T
-    }), /*#__PURE__*/React.createElement(EditableLabel, {
-      value: f.label,
-      onChange: v => updateField(si, fi, "label", v),
-      T: T
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 4
-      }
-    }, /*#__PURE__*/React.createElement(EditableValue, {
-      value: f.value,
-      onChange: v => updateField(si, fi, "value", v),
-      T: T,
-      style: {
-        fontSize: 14,
-        fontWeight: 600,
-        color: T.accent,
-        textAlign: "right",
-        maxWidth: 60
-      }
-    }), editing && /*#__PURE__*/React.createElement("button", {
-      onClick: () => removeField(si, fi),
-      style: {
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        fontSize: 12,
-        color: T.textMuted
-      }
-    }, "\u2715"))), isPct && /*#__PURE__*/React.createElement("div", {
-      style: {
-        height: 3,
-        background: T.accentFaint,
-        borderRadius: 2,
-        overflow: "hidden"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        height: "100%",
-        width: `${Math.min(pct, 100)}%`,
-        background: `linear-gradient(90deg,${T.accentDim},${T.accent})`,
-        borderRadius: 2
-      }
-    })));
-  }), style === "spells" && /*#__PURE__*/React.createElement(React.Fragment, null, [...new Set(sec.fields.map(f => f.label))].map(group => /*#__PURE__*/React.createElement("div", {
-    key: group,
-    style: {
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      color: T.textSoft,
-      letterSpacing: 1.5,
-      fontFamily: "'Cinzel',Georgia,serif",
-      marginBottom: 8,
-      textTransform: "uppercase"
-    }
-  }, group, "s"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: 8
-    }
-  }, sec.fields.map((f, fi) => {
-    if (f.label !== group) return null;
-    return /*#__PURE__*/React.createElement("span", {
-      key: f.id,
-      style: {
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        padding: "7px 14px",
-        background: `linear-gradient(135deg,${T.accentFaint},transparent)`,
-        border: `1px solid ${T.borderLight}`,
-        borderRadius: 20,
-        boxShadow: `0 0 12px ${T.accentFaint}, 0 1px 4px ${T.accentFaint}`
-      }
-    }, /*#__PURE__*/React.createElement(Dot, {
-      c: f.confidence,
-      T: T,
-      s: {
-        width: 6,
-        height: 6
-      }
-    }), /*#__PURE__*/React.createElement(EditableValue, {
-      value: f.value,
-      onChange: v => updateField(si, fi, "value", v),
-      T: T,
-      style: {
-        fontSize: 14,
-        borderBottom: "none",
-        padding: 0
-      }
-    }), editing && /*#__PURE__*/React.createElement("button", {
-      onClick: () => removeField(si, fi),
-      style: {
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        fontSize: 11,
-        color: T.textMuted,
-        marginLeft: 2
-      }
-    }, "\u2715"));
-  }))))), style === "default" && sec.fields.map((f, fi) => /*#__PURE__*/React.createElement("div", {
-    key: f.id,
-    style: {
-      display: "flex",
-      alignItems: "flex-start",
-      gap: 8,
-      padding: "8px 0",
-      borderBottom: `1px solid ${T.accentFaint}`
-    }
-  }, editing && /*#__PURE__*/React.createElement(MoveButtons, {
-    T: T,
-    si: si,
-    fi: fi,
-    total: sec.fields.length,
-    moveField: moveField
-  }), /*#__PURE__*/React.createElement(Dot, {
-    c: f.confidence,
-    T: T,
-    s: {
-      marginTop: 8
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      gap: 2
-    }
-  }, /*#__PURE__*/React.createElement(EditableLabel, {
-    value: f.label,
-    onChange: v => updateField(si, fi, "label", v),
-    T: T
-  }), /*#__PURE__*/React.createElement(EditableValue, {
-    value: f.value,
-    onChange: v => updateField(si, fi, "value", v),
-    T: T
-  })), editing && /*#__PURE__*/React.createElement("button", {
-    onClick: () => removeField(si, fi),
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      fontSize: 13,
-      color: T.textMuted,
-      padding: "4px",
-      flexShrink: 0
-    }
-  }, "\u2715"))), editing && /*#__PURE__*/React.createElement("button", {
-    onClick: () => addField(si),
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-      padding: "8px",
-      background: "none",
-      border: `1px dashed ${T.borderLight}`,
-      borderRadius: 8,
-      cursor: "pointer",
-      width: "100%",
-      marginTop: 6
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 14,
-      color: T.accentDim
-    }
-  }, "+ Add Field"))));
-}
-
 /* ━━━━ AVATAR EDITOR ━━━━ */
 function AvatarEditor({
   data,
@@ -2989,6 +2600,7 @@ function AvatarEditor({
     x: 50,
     y: 50
   };
+  const fit = data.avatarFit || "cover";
   const handleFile = e => {
     const f = e.target.files[0];
     if (!f || !f.type.startsWith("image/")) return;
@@ -2996,16 +2608,18 @@ function AvatarEditor({
     r.onload = ev => {
       const img2 = new Image();
       img2.onload = () => {
+        const maxDim = 640;
+        let w = img2.width,
+          h = img2.height;
+        const scale = Math.min(1, maxDim / Math.max(w, h));
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
         const c = document.createElement("canvas");
-        const s = 200;
-        c.width = s;
-        c.height = s;
+        c.width = w;
+        c.height = h;
         const ctx = c.getContext("2d");
-        const min = Math.min(img2.width, img2.height);
-        const sx = (img2.width - min) / 2;
-        const sy = (img2.height - min) / 2;
-        ctx.drawImage(img2, sx, sy, min, min, 0, 0, s, s);
-        const compressed = c.toDataURL("image/jpeg", 0.8);
+        ctx.drawImage(img2, 0, 0, w, h);
+        const compressed = c.toDataURL("image/jpeg", 0.82);
         snap(data);
         setData(p => ({
           ...p,
@@ -3021,8 +2635,16 @@ function AvatarEditor({
     r.readAsDataURL(f);
     e.target.value = "";
   };
+  const toggleFit = () => {
+    const nf = fit === "cover" ? "contain" : "cover";
+    snap(data);
+    setData(p => ({
+      ...p,
+      avatarFit: nf
+    }));
+  };
   const handleStart = e => {
-    if (!img || !editing) return;
+    if (!img || !editing || fit !== "cover") return;
     e.preventDefault();
     const t = e.touches ? e.touches[0] : e;
     startPos.current = {
@@ -3076,9 +2698,10 @@ function AvatarEditor({
   });
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      position: "relative",
-      width: 90,
-      height: 90
+      width: "72%",
+      maxWidth: 300,
+      margin: "0 auto",
+      position: "relative"
     }
   }, /*#__PURE__*/React.createElement("input", {
     ref: fileRef,
@@ -3089,72 +2712,84 @@ function AvatarEditor({
       display: "none"
     }
   }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: 90,
-      height: 90,
-      borderRadius: 22,
-      border: `1.5px solid ${T.accent}`,
-      opacity: 0.3,
-      pointerEvents: "none"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    onClick: () => editing && !dragging && fileRef.current?.click(),
+    onClick: () => editing && !dragging && fileRef.current && fileRef.current.click(),
     onMouseDown: img ? handleStart : undefined,
     onTouchStart: img ? handleStart : undefined,
     style: {
-      width: 80,
-      height: 80,
-      borderRadius: 18,
-      background: img ? `url(${img})` : `linear-gradient(135deg,${T.accentFaint},rgba(255,255,255,0.03))`,
-      backgroundSize: "cover",
-      backgroundPosition: `${pos.x}% ${pos.y}%`,
-      border: `2px solid ${T.accent}`,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: `0 4px 20px ${T.accentFaint}, 0 0 30px ${T.accentFaint}`,
-      cursor: editing ? img ? "grab" : "pointer" : "default",
+      width: "100%",
+      aspectRatio: "3 / 4",
+      borderRadius: 14,
+      border: T.frame || `2px solid ${T.accent}`,
+      outline: T.frameInset,
+      outlineOffset: "-7px",
+      backgroundImage: img ? `url(${img})` : `linear-gradient(135deg,${T.accentFaint},rgba(255,255,255,0.03))`,
+      backgroundColor: T.accentFaint,
+      backgroundSize: fit === "contain" ? "contain" : "cover",
+      backgroundPosition: fit === "contain" ? "center" : `${pos.x}% ${pos.y}%`,
+      backgroundRepeat: "no-repeat",
+      boxShadow: `${T.heroGlow || "0 0 40px " + T.accentFaint}, inset 0 0 30px ${T.accentFaint}`,
+      cursor: editing ? img ? fit === "cover" ? "grab" : "pointer" : "pointer" : "default",
       overflow: "hidden",
       touchAction: "none",
-      margin: "5px"
+      position: "relative",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
     }
   }, !img && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 34,
+      fontSize: 72,
       fontWeight: 700,
       color: T.accent,
       fontFamily: "'Cinzel',Georgia,serif"
     }
-  }, data.name.charAt(0) || "?")), editing && /*#__PURE__*/React.createElement("div", {
+  }, data.name.charAt(0) || "?")), img && /*#__PURE__*/React.createElement("button", {
+    onClick: e => {
+      e.stopPropagation();
+      toggleFit();
+    },
     style: {
       position: "absolute",
-      bottom: -2,
-      right: -2,
-      width: 22,
-      height: 22,
+      top: 8,
+      left: 8,
+      padding: "4px 10px",
+      borderRadius: 14,
+      background: "rgba(0,0,0,0.45)",
+      border: `1px solid ${T.borderLight}`,
+      cursor: "pointer",
+      fontSize: 10,
+      fontWeight: 700,
+      color: "#fff",
+      letterSpacing: 0.5,
+      fontFamily: "'Cinzel',Georgia,serif"
+    }
+  }, fit === "cover" ? "Fit whole" : "Fill"), editing && /*#__PURE__*/React.createElement("div", {
+    onClick: () => fileRef.current && fileRef.current.click(),
+    style: {
+      position: "absolute",
+      bottom: 8,
+      right: 8,
+      width: 30,
+      height: 30,
       borderRadius: "50%",
-      background: `linear-gradient(135deg,#D4A843,#F0CC6B)`,
+      background: "linear-gradient(135deg,#D4A843,#F0CC6B)",
       border: `2px solid ${T.bg}`,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       cursor: "pointer",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
-    },
-    onClick: () => fileRef.current?.click()
+      boxShadow: "0 1px 4px rgba(0,0,0,0.4)"
+    }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       color: "#0A0A0C",
       fontWeight: 900
     }
-  }, "\uD83D\uDCF7")), editing && img && /*#__PURE__*/React.createElement("div", {
+  }, "📷")), editing && img && fit === "cover" && /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
-      marginTop: 4
+      marginTop: 6
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
@@ -3164,7 +2799,991 @@ function AvatarEditor({
   }, "Drag to reposition")));
 }
 
+/* ====== SheetSnap Character Hub patch (Option B: grouped categories) ====== */
+
+var CAT_ORDER = ["identity", "vitals", "combat", "skills", "magic", "inventory", "notes", "other"];
+var CAT_META = {
+  identity: {
+    label: "Identity",
+    icon: "identity"
+  },
+  vitals: {
+    label: "Vitals",
+    icon: "vitals"
+  },
+  combat: {
+    label: "Combat",
+    icon: "combat"
+  },
+  skills: {
+    label: "Skills",
+    icon: "skills"
+  },
+  magic: {
+    label: "Magic",
+    icon: "magic"
+  },
+  inventory: {
+    label: "Inventory",
+    icon: "inventory"
+  },
+  notes: {
+    label: "Notes & Lore",
+    icon: "notes"
+  },
+  other: {
+    label: "More",
+    icon: "other"
+  },
+  journal: {
+    label: "Journal",
+    icon: "journal"
+  }
+};
+function categorize(sec) {
+  var s = ((sec.title || "") + " " + (sec.id || "")).toLowerCase();
+  var has = function (arr) {
+    return arr.some(function (w) {
+      return s.indexOf(w) >= 0;
+    });
+  };
+  if (has(["identit", "char info", "character info", "bio", "background", "backstory", "appearance", "personal", "persona", "descr", "origin", "alignment", "deity", "faith", "ideal", "bond", "flaw", "trait"])) return "identity";
+  if (has(["combat", "attack", "armor", "armour", "defense", "defence", "weapon", "saving", "initiative", "special abilit", "bonus", "martial", "maneuver", "hand to hand", "hth", "melee", "ranged", "strike", "parry", "dodge", "prowess"])) return "combat";
+  if (has(["hit point", "hit-point", "health", "wound", "vital", "s.d.c", "sdc", "experience", "xp", "attribute", "ability score", "characteristic", "resource"])) return "vitals";
+  if (has(["skill", "proficien", "talent", "feat", "expertise", "lore", "craft", "profession", "knowledge"])) return "skills";
+  if (has(["inventor", "equipment", "gear", "item", "possession", "treasure", "loot", "wealth", "money", "currency", "coin", "pack", "belonging", "consumable", "ammo", "ammunition", "container"])) return "inventory";
+  if (has(["spell", "cantrip", "magic", "incantation", "slot", "psionic", "power", "prayer", "domain", "ritual", "arcane", "divine", "sorcery", "invocation", "mystic"])) return "magic";
+  if (has(["note", "journal", "session", "log", "quest", "mission", "story", "diary", "campaign", "adventure", "ally", "allies", "npc", "contact", "relationship"])) return "notes";
+  return "other";
+}
+function buildGroups(sections) {
+  var map = {};
+  var catOf = sections.map(categorize);
+  catOf.forEach(function (k, i) {
+    if (!map[k]) map[k] = {
+      key: k,
+      label: (CAT_META[k] || {}).label || k,
+      members: [],
+      fields: 0,
+      low: false
+    };
+    var m = map[k];
+    m.members.push(i);
+    var sec = sections[i];
+    m.fields += sec.fields.length;
+    if (sec.fields.some(function (f) {
+      return f.confidence === "low";
+    })) m.low = true;
+  });
+  var cats = CAT_ORDER.map(function (k) {
+    return map[k];
+  }).filter(function (c) {
+    return c && c.members.length > 0;
+  });
+  return {
+    catOf: catOf,
+    cats: cats
+  };
+}
+function CatIcon(props) {
+  var name = props.name,
+    size = props.size || 22,
+    color = props.color || "currentColor";
+  var p = function (d) {
+    return React.createElement("path", {
+      d: d,
+      fill: "none",
+      stroke: color,
+      strokeWidth: 1.7,
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    });
+  };
+  var c = function (cx, cy, r) {
+    return React.createElement("circle", {
+      cx: cx,
+      cy: cy,
+      r: r,
+      fill: "none",
+      stroke: color,
+      strokeWidth: 1.7
+    });
+  };
+  var kids = {
+    identity: [c(12, 8, 3.2), p("M5.5 20c.6-3.3 3.3-5 6.5-5s5.9 1.7 6.5 5")],
+    vitals: [p("M12 20.5l-7-7a4.2 4.2 0 0 1 6-6l1 1 1-1a4.2 4.2 0 0 1 6 6z")],
+    combat: [p("M12 3l7 3v5c0 4.4-3 7.2-7 8.6C8 17.2 5 14.4 5 10V6z")],
+    skills: [c(12, 12, 8.5), c(12, 12, 4.6), c(12, 12, 1.1)],
+    magic: [p("M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z")],
+    inventory: [p("M4 7.5l8 4 8-4M12 11.5V21M4 7.5l8-4 8 4v9l-8 4-8-4z")],
+    notes: [p("M6 3h9l4 4v14H6zM15 3v4h4")],
+    journal: [p("M5 4h10a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM9 4v12")],
+    other: [c(6, 7, 1.4), c(12, 7, 1.4), c(18, 7, 1.4), c(6, 12, 1.4), c(12, 12, 1.4), c(18, 12, 1.4), c(6, 17, 1.4), c(12, 17, 1.4), c(18, 17, 1.4)]
+  };
+  return React.createElement("svg", {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    style: {
+      display: "block"
+    }
+  }, kids[name] || kids.other);
+}
+function HubNav({
+  T,
+  data,
+  group,
+  activeCat,
+  setActiveCat
+}) {
+  const cats = group.cats;
+  if (activeCat === null) {
+    const journalCard = {
+      key: "journal",
+      label: "Journal",
+      members: [],
+      fields: 0,
+      low: false
+    };
+    const cards = cats.concat([journalCard]);
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: "2px 16px 22px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        fontSize: 10,
+        color: T.textMuted,
+        letterSpacing: 1,
+        textTransform: "uppercase",
+        margin: "0 0 12px"
+      }
+    }, "Navigate"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 9
+      }
+    }, cards.map(cat => {
+      const meta = CAT_META[cat.key] || {
+        label: cat.label,
+        icon: "other"
+      };
+      const sub = cat.key === "journal" ? "Session log" : cat.members.map(i => data.sections[i].title).join("  ·  ");
+      const cnt = cat.key === "journal" ? "" : cat.members.length > 1 ? cat.members.length + " sections" : cat.fields + " fields";
+      return /*#__PURE__*/React.createElement("button", {
+        key: cat.key,
+        onClick: () => setActiveCat(cat.key),
+        className: "ss-press",
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          textAlign: "left",
+          width: "100%",
+          background: T.cardGrad,
+          border: `1px solid ${T.borderLight}`,
+          borderLeft: `3px solid ${T.accent}`,
+          borderRadius: "0 12px 12px 0",
+          padding: "12px 12px",
+          cursor: "pointer",
+          boxShadow: T.cardShadow
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          width: 42,
+          height: 42,
+          flex: "none",
+          borderRadius: "50%",
+          border: `1px solid ${T.borderLight}`,
+          background: T.accentFaint,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }
+      }, /*#__PURE__*/React.createElement(CatIcon, {
+        name: meta.icon,
+        size: 22,
+        color: T.accent
+      })), /*#__PURE__*/React.createElement("span", {
+        style: {
+          flex: 1,
+          minWidth: 0
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          display: "block",
+          fontFamily: "'Cinzel',Georgia,serif",
+          fontWeight: 700,
+          fontSize: 15,
+          letterSpacing: 0.5,
+          color: T.text
+        }
+      }, meta.label), /*#__PURE__*/React.createElement("span", {
+        style: {
+          display: "block",
+          fontSize: 10,
+          color: T.textMuted,
+          marginTop: 2,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis"
+        }
+      }, sub)), cat.low && /*#__PURE__*/React.createElement("span", {
+        style: {
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: T.yellow,
+          flex: "none",
+          boxShadow: `0 0 6px ${T.yellow}`
+        }
+      }), cnt && /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 9,
+          color: T.textMuted,
+          flex: "none"
+        }
+      }, cnt), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 16,
+          color: T.accent,
+          opacity: 0.55,
+          flex: "none"
+        }
+      }, "›"));
+    })));
+  }
+  const meta = CAT_META[activeCat] || {
+    label: activeCat,
+    icon: "other"
+  };
+  const cur = cats.find(c => c.key === activeCat);
+  const showTitle = activeCat === "journal" || cur && cur.members.length > 1;
+  const cnt = activeCat === "journal" ? "Session log" : cur ? cur.members.length > 1 ? cur.members.length + " sections · " + cur.fields + " fields" : cur.fields + " fields" : "";
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "8px 16px 2px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => window.history.back(),
+    className: "ss-press",
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 5,
+      background: T.accentFaint,
+      border: `1px solid ${T.borderLight}`,
+      borderRadius: 18,
+      padding: "6px 14px",
+      cursor: "pointer",
+      color: T.accent,
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 12,
+      letterSpacing: 0.5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 14
+    }
+  }, "‹"), " All Sections"), showTitle && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      marginTop: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement(CatIcon, {
+    name: meta.icon,
+    size: 30,
+    color: T.accent
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 21,
+      letterSpacing: 2.5,
+      color: T.accent,
+      textShadow: T.titleShadow,
+      marginTop: 5
+    }
+  }, meta.label), cnt && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: T.textMuted,
+      marginTop: 5
+    }
+  }, cnt)));
+}
+
 /* ━━━━ CHARACTER SCREEN ━━━━ */
+/* ====== Scan-confidence review feature ====== */
+
+function ScanCheck({
+  T,
+  low,
+  totalFields,
+  secCount,
+  onOpen
+}) {
+  if (low > 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: "14px 16px 2px"
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: onOpen,
+      className: "ss-press",
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        width: "100%",
+        textAlign: "left",
+        background: "rgba(181,69,27,0.08)",
+        border: `1px solid ${T.yellow}66`,
+        borderLeft: `3px solid ${T.yellow}`,
+        borderRadius: "0 12px 12px 0",
+        padding: "13px 12px",
+        cursor: "pointer"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        width: 40,
+        height: 40,
+        flex: "none",
+        borderRadius: "50%",
+        background: "rgba(181,69,27,0.12)",
+        border: `1px solid ${T.yellow}66`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }
+    }, /*#__PURE__*/React.createElement("svg", {
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      style: {
+        display: "block"
+      }
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M9 11l3 3 8-8",
+      fill: "none",
+      stroke: T.yellow,
+      strokeWidth: "1.7",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9",
+      fill: "none",
+      stroke: T.yellow,
+      strokeWidth: "1.7",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }))), /*#__PURE__*/React.createElement("span", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: "block",
+        fontFamily: "'Cinzel',Georgia,serif",
+        fontWeight: 700,
+        fontSize: 15,
+        color: T.yellow
+      }
+    }, "Double-check " + low + " " + (low === 1 ? "field" : "fields")), /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: "block",
+        fontSize: 11,
+        color: T.textMuted,
+        marginTop: 2
+      }
+    }, "The scanner wasn't fully sure it read these. Tap to review.")), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 18,
+        color: T.yellow,
+        opacity: 0.7,
+        flex: "none"
+      }
+    }, "›")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+        marginTop: 12,
+        fontSize: 12,
+        color: T.textMuted
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 5
+      }
+    }, /*#__PURE__*/React.createElement(Dot, {
+      c: "high",
+      T: T
+    }), " Read clearly"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 5
+      }
+    }, /*#__PURE__*/React.createElement(Dot, {
+      c: "low",
+      T: T
+    }), " Needs a check")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        fontSize: 12,
+        color: T.textMuted,
+        marginTop: 9
+      }
+    }, totalFields + " fields · " + secCount + " sections"));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "14px 16px 2px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+      background: "rgba(74,124,89,0.10)",
+      border: `1px solid ${T.green}66`,
+      borderRadius: 12,
+      padding: "12px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: 32,
+      height: 32,
+      flex: "none",
+      borderRadius: "50%",
+      background: "rgba(74,124,89,0.16)",
+      border: `1px solid ${T.green}`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: T.green,
+      fontSize: 17,
+      fontWeight: 900
+    }
+  }, "✓"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 14,
+      color: T.green,
+      lineHeight: 1.3
+    }
+  }, "Scan verified — all " + totalFields + " fields look good")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      fontSize: 12,
+      color: T.textMuted,
+      marginTop: 9
+    }
+  }, totalFields + " fields · " + secCount + " sections"));
+}
+function VerifyModal({
+  T,
+  data,
+  total,
+  onClose,
+  onVerify,
+  onEdit
+}) {
+  const items = [];
+  if (data.name_confidence === "low") items.push({
+    type: "name",
+    group: "Character",
+    label: "Name",
+    value: data.name,
+    key: "__name"
+  });
+  if (data.system_confidence === "low") items.push({
+    type: "system",
+    group: "Character",
+    label: "Game System",
+    value: data.system,
+    key: "__system"
+  });
+  data.sections.forEach((sec, si) => sec.fields.forEach((f, fi) => {
+    if (f.confidence === "low") items.push({
+      type: "field",
+      si: si,
+      fi: fi,
+      group: sec.title,
+      label: f.label,
+      value: f.value,
+      key: sec.id + "_" + f.id
+    });
+  }));
+  const remaining = items.length;
+  const done = Math.max(0, total - remaining);
+  const pct = total > 0 ? Math.round(done / total * 100) : 100;
+  const groups = [];
+  items.forEach(it => {
+    let g = groups.find(x => x.name === it.group);
+    if (!g) {
+      g = {
+        name: it.group,
+        items: []
+      };
+      groups.push(g);
+    }
+    g.items.push(it);
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    onClick: onClose,
+    style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.7)",
+      zIndex: 1000,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: T.surface,
+      border: T.frame || `2px solid ${T.borderLight}`,
+      outline: T.frameInset,
+      outlineOffset: "-6px",
+      borderRadius: 16,
+      padding: "22px 20px",
+      maxWidth: 420,
+      width: "100%",
+      maxHeight: "85vh",
+      overflowY: "auto",
+      boxShadow: `${T.surfaceShadow}, 0 0 30px ${T.accentFaint}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 18,
+      color: T.accent,
+      letterSpacing: 1
+    }
+  }, "Review Scan"), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: 18,
+      color: T.textMuted
+    }
+  }, "✕")), remaining === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: "26px 8px 6px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 54,
+      height: 54,
+      margin: "0 auto 14px",
+      borderRadius: "50%",
+      background: "rgba(74,124,89,0.15)",
+      border: `2px solid ${T.green}`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: T.green,
+      fontSize: 28,
+      fontWeight: 900
+    }
+  }, "✓"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 18,
+      color: T.green,
+      marginBottom: 6
+    }
+  }, "All clear!"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      color: T.textSoft,
+      lineHeight: 1.5
+    }
+  }, "Every flagged field has been checked. Your sheet is good to go.")) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: T.textSoft,
+      lineHeight: 1.5,
+      marginBottom: 14
+    }
+  }, "Compare each to your paper sheet, then tap ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: T.green
+    }
+  }, "Looks right"), " — or tap the value to fix it."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 12,
+      color: T.textMuted,
+      marginBottom: 5
+    }
+  }, /*#__PURE__*/React.createElement("span", null, remaining + " left to check"), /*#__PURE__*/React.createElement("span", null, done + " of " + total + " done")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 6,
+      borderRadius: 3,
+      background: T.accentFaint,
+      overflow: "hidden",
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: "100%",
+      width: pct + "%",
+      background: `linear-gradient(90deg,${T.green},#6ba87c)`,
+      borderRadius: 3,
+      transition: "width 0.3s ease"
+    }
+  })), groups.map(g => /*#__PURE__*/React.createElement("div", {
+    key: g.name
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontSize: 12,
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+      color: T.text,
+      margin: "16px 0 2px"
+    }
+  }, g.name), g.items.map(it => /*#__PURE__*/React.createElement("div", {
+    key: it.key,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "11px 2px",
+      borderBottom: `1px solid ${T.accentFaint}`
+    }
+  }, /*#__PURE__*/React.createElement(Dot, {
+    c: "low",
+    T: T
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      letterSpacing: 0.5,
+      textTransform: "uppercase",
+      color: T.textMuted
+    }
+  }, it.label), /*#__PURE__*/React.createElement(EditableValue, {
+    value: it.value,
+    onChange: v => onEdit(it, v),
+    T: T,
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      fontFamily: "'Cinzel',Georgia,serif",
+      color: T.accent,
+      borderBottom: "none"
+    }
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onVerify(it),
+    className: "ss-press",
+    style: {
+      flex: "none",
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      cursor: "pointer",
+      background: T.green,
+      border: "none",
+      borderRadius: 16,
+      padding: "6px 12px",
+      color: "#fff",
+      fontSize: 11,
+      fontWeight: 700,
+      fontFamily: "'Cinzel',Georgia,serif",
+      whiteSpace: "nowrap"
+    }
+  }, "✓ Looks right")))))), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "ss-press",
+    style: {
+      display: "block",
+      width: "100%",
+      marginTop: 18,
+      padding: "12px",
+      background: T.metalGrad,
+      border: "none",
+      borderRadius: 10,
+      cursor: "pointer",
+      color: T.bg,
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 15,
+      letterSpacing: 0.5
+    }
+  }, remaining === 0 ? "Done" : "Close")));
+}
+
+/* ====== Mode-less inline editing components ====== */
+
+function FieldMenu({
+  T,
+  k,
+  menuKey,
+  setMenuKey,
+  onMoveUp,
+  onMoveDown,
+  onDelete,
+  canUp,
+  canDown,
+  style
+}) {
+  const open = menuKey === k;
+  const item = (enabled, icon, label, fn, danger) => /*#__PURE__*/React.createElement("div", {
+    onClick: e => {
+      e.stopPropagation();
+      if (enabled) fn();
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 9,
+      padding: "9px 12px",
+      fontSize: 13,
+      fontFamily: "Georgia,serif",
+      color: danger ? "#a3402a" : enabled ? T.text : T.textMuted,
+      cursor: enabled ? "pointer" : "default",
+      opacity: enabled ? 1 : 0.45,
+      borderBottom: danger ? "none" : `1px solid ${T.accentFaint}`
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 14,
+      width: 16,
+      textAlign: "center"
+    }
+  }, icon), label);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      flex: "none",
+      ...style
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    "aria-label": "Options",
+    onClick: e => {
+      e.stopPropagation();
+      setMenuKey(open ? null : k);
+    },
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: T.accent,
+      opacity: open ? 0.95 : 0.5,
+      fontSize: 18,
+      lineHeight: 1,
+      padding: "2px 5px"
+    }
+  }, "⋮"), open && /*#__PURE__*/React.createElement("div", {
+    onClick: e => {
+      e.stopPropagation();
+      setMenuKey(null);
+    },
+    style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 1100
+    }
+  }), open && /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      position: "absolute",
+      top: 28,
+      right: 0,
+      zIndex: 1101,
+      width: 152,
+      background: T.surface,
+      border: `1px solid ${T.borderLight}`,
+      borderRadius: 10,
+      boxShadow: "0 10px 28px rgba(0,0,0,0.32)",
+      overflow: "hidden"
+    }
+  }, item(canUp, "↑", "Move up", () => {
+    onMoveUp();
+    setMenuKey(null);
+  }), item(canDown, "↓", "Move down", () => {
+    onMoveDown();
+    setMenuKey(null);
+  }), item(true, "✕", "Delete", () => {
+    onDelete();
+  }, true)));
+}
+function SectionTitle({
+  T,
+  value,
+  onChange
+}) {
+  const [ed, setEd] = useState(false);
+  const [d, setD] = useState(value);
+  const r = useRef(null);
+  useEffect(() => {
+    if (ed && r.current) r.current.focus();
+  }, [ed]);
+  useEffect(() => {
+    setD(value);
+  }, [value]);
+  if (ed) return /*#__PURE__*/React.createElement("input", {
+    ref: r,
+    value: d,
+    onChange: e => setD(e.target.value),
+    onBlur: () => {
+      onChange(d);
+      setEd(false);
+    },
+    onKeyDown: e => {
+      if (e.key === "Enter") {
+        onChange(d);
+        setEd(false);
+      }
+    },
+    style: {
+      fontSize: 20,
+      fontWeight: 700,
+      color: T.accent,
+      fontFamily: "'Cinzel',Georgia,serif",
+      background: T.accentFaint,
+      border: `1px solid ${T.borderLight}`,
+      borderRadius: 6,
+      padding: "4px 12px",
+      outline: "none",
+      textAlign: "center",
+      width: "80%"
+    }
+  });
+  return /*#__PURE__*/React.createElement("h2", {
+    onClick: () => setEd(true),
+    style: {
+      fontSize: 20,
+      fontWeight: 700,
+      color: T.accent,
+      fontFamily: "'Cinzel',Georgia,serif",
+      letterSpacing: 2.5,
+      textShadow: T.titleShadow,
+      cursor: "pointer",
+      margin: 0
+    }
+  }, value);
+}
+function AddRow({
+  T,
+  label,
+  onClick
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    onClick: onClick,
+    className: "ss-press",
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      margin: "16px 0 4px",
+      padding: "12px",
+      border: `1.5px dashed ${T.borderLight}`,
+      borderRadius: 10,
+      cursor: "pointer",
+      color: T.accent,
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 13,
+      letterSpacing: 0.5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16,
+      lineHeight: 1
+    }
+  }, "＋"), " ", label);
+}
+function Toast({
+  T,
+  msg,
+  onUndo
+}) {
+  if (!msg) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      left: 14,
+      right: 14,
+      bottom: 16,
+      zIndex: 1200,
+      maxWidth: 440,
+      margin: "0 auto",
+      background: "#2a1709",
+      color: "#f0e6d0",
+      borderRadius: 10,
+      padding: "11px 14px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      boxShadow: "0 6px 22px rgba(0,0,0,0.5)"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13
+    }
+  }, msg), /*#__PURE__*/React.createElement("button", {
+    onClick: onUndo,
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "#e0b84d",
+      fontFamily: "'Cinzel',Georgia,serif",
+      fontWeight: 700,
+      fontSize: 13,
+      display: "flex",
+      alignItems: "center",
+      gap: 5
+    }
+  }, "↶ Undo"));
+}
+
 function CharacterScreen({
   T,
   character,
@@ -3173,7 +3792,8 @@ function CharacterScreen({
   onSave,
   onArchive,
   themeKey,
-  setThemeKey
+  setThemeKey,
+  catBackRef
 }) {
   const [data, setData] = useState(JSON.parse(JSON.stringify(character)));
   const [noteInput, setNoteInput] = useState("");
@@ -3183,14 +3803,35 @@ function CharacterScreen({
   const [undoStack, setUndoStack] = useState([]);
   const [verifyOnly, setVerifyOnly] = useState(false);
   const [activeSec, setActiveSec] = useState(0);
+  const [activeCat, setActiveCat] = useState(null);
+  const [showVerify, setShowVerify] = useState(false);
+  const verifyTotalRef = useRef(0);
+  const group = buildGroups(data.sections);
+  const navKeys = [...group.cats.map(c => c.key), "journal"];
+  const catPushedRef = useRef(false);
+  useEffect(() => {
+    if (catBackRef && catBackRef.current) {
+      catBackRef.current.open = activeCat !== null;
+      catBackRef.current.close = () => setActiveCat(null);
+    }
+  });
+  useEffect(() => {
+    if (activeCat !== null && !catPushedRef.current) {
+      catPushedRef.current = true;
+      window.history.pushState({ ssInApp: true, ssCat: true }, "");
+    } else if (activeCat === null) {
+      catPushedRef.current = false;
+    }
+  }, [activeCat]);
   const swipeRef = useRef(null);
   const swipeStart = useRef(null);
   const handleSwipe = dir => {
-    setActiveSec(s => {
-      const next = s + dir;
-      if (next < 0 || next > data.sections.length) return s;
-      return next;
-    });
+    const cur = activeCat;
+    const i = cur === null ? -1 : navKeys.indexOf(cur);
+    const next = i + dir;
+    if (next < 0) { if (cur !== null) window.history.back(); return; }
+    if (next >= navKeys.length) return;
+    setActiveCat(navKeys[next]);
   };
   useEffect(() => {
     const el = swipeRef.current;
@@ -3265,6 +3906,10 @@ function CharacterScreen({
   const save = () => {
     onSave(data);
     onBack();
+  };
+  const goBack = () => {
+    if (activeCat !== null) { window.history.back(); return; }
+    save();
   };
   const snap = prev => {
     setUndoStack(s => {
@@ -3402,6 +4047,22 @@ function CharacterScreen({
       system_confidence: "high"
     };
   });
+  const verifyItem = it => {
+    if (it.type === "field") updateField(it.si, it.fi, "confidence", "high");
+    else setData(p => { snap(p); return { ...p, [it.type === "name" ? "name_confidence" : "system_confidence"]: "high" }; });
+  };
+  const editItem = (it, val) => {
+    if (it.type === "field") updateField(it.si, it.fi, "value", val);
+    else if (it.type === "name") updateName(val);
+    else updateSystem(val);
+  };
+  const [menuKey, setMenuKey] = useState(null);
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  const showToast = m => { setToast(m); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 4500); };
+  const delField = (si, fi) => { const sec = data.sections[si]; const lbl = sec && sec.fields[fi] ? sec.fields[fi].label : "Field"; removeField(si, fi); setMenuKey(null); showToast('"' + lbl + '" deleted'); };
+  const delSection = si => { const sec = data.sections[si]; const lbl = sec ? sec.title : "Section"; removeSection(si); setMenuKey(null); showToast('"' + lbl + '" deleted'); };
+  const undoToast = () => { undo(); setToast(null); };
   const getSectionStyle = sec => {
     if (sec.fields.length <= 10 && sec.fields.every(f => !f.value.includes("%") && f.value.length < 8 && f.label.length < 14)) return "grid";
     if (sec.fields.some(f => f.value.includes("%"))) return "skills";
@@ -3522,7 +4183,7 @@ function CharacterScreen({
       fontWeight: 700,
       color: T.accent
     }
-  }, "Navigating sections"), " \u2014 The buttons below your character info (Ability Scores, Skills, etc.) jump to that section. You can also swipe left or right anywhere on the page to move between sections."), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+  }, "Navigating sections"), " \u2014 Your character opens to a hub with a large portrait and a set of category cards (Combat, Magic, Skills, and so on). Tap a card to open that group as its own page, then tap ‹ All Sections to return. You can also swipe left or right to move between groups."), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     style: {
       fontWeight: 700,
       color: T.accent
@@ -3532,7 +4193,7 @@ function CharacterScreen({
       fontWeight: 700,
       color: T.accent
     }
-  }, "Journal"), " \u2014 The last section button. Use it to log notes after each game session, export your character as a backup file, or archive retired characters to Fallen Heroes."), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+  }, "Journal"), " \u2014 The last card in the hub. Use it to log notes after each game session, export your character as a backup file, or archive retired characters to Fallen Heroes."), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     style: {
       fontWeight: 700,
       color: T.accent
@@ -3635,7 +4296,7 @@ function CharacterScreen({
       gap: 6
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: save,
+    onClick: goBack,
     style: {
       display: "flex",
       alignItems: "center",
@@ -3706,23 +4367,7 @@ function CharacterScreen({
       boxShadow: `0 1px 4px rgba(0,0,0,0.3)`,
       marginRight: 2
     }
-  }, "?"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setEditing(!editing),
-    style: {
-      background: `linear-gradient(135deg,${editing ? T.accent : T.accentDim},${editing ? T.accentBright : T.accent})`,
-      border: "none",
-      borderRadius: 8,
-      padding: "5px 12px",
-      cursor: "pointer",
-      fontSize: 11,
-      fontWeight: 700,
-      color: T.headerText || T.bg,
-      fontFamily: "'Cinzel',Georgia,serif",
-      whiteSpace: "nowrap",
-      boxShadow: `0 1px 4px rgba(0,0,0,0.3)`,
-      letterSpacing: 0.5
-    }
-  }, editing ? "✓ Done" : "✎ Edit"), /*#__PURE__*/React.createElement("div", {
+  }, "?"), /*#__PURE__*/React.createElement("div", {
     style: {
       width: 1,
       height: 16,
@@ -3759,7 +4404,9 @@ function CharacterScreen({
         boxShadow: active ? `0 0 8px ${isLight ? "rgba(0,0,0,0.15)" : theme.icon + "50"}` : "none"
       }
     }));
-  }))), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement(Toast, {
+    T: T, msg: toast, onUndo: undoToast
+  }), /*#__PURE__*/React.createElement("div", {
     ref: swipeRef,
     style: {
       flex: 1,
@@ -3774,7 +4421,7 @@ function CharacterScreen({
       alignItems: "center",
       gap: 4
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, activeCat === null && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -3805,7 +4452,7 @@ function CharacterScreen({
     setData: setData,
     snap: snap,
     T: T,
-    editing: editing
+    editing: true
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
@@ -3924,56 +4571,20 @@ function CharacterScreen({
         opacity: 0.7
       }
     }, "\xB7"), /*#__PURE__*/React.createElement("span", null, f.value))));
-  })(), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 14,
-      padding: "14px 0 0",
-      flexWrap: "wrap",
-      alignItems: "center",
-      justifyContent: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      fontSize: 15,
-      color: T.textSoft
-    }
-  }, /*#__PURE__*/React.createElement(Dot, {
-    c: "high",
-    T: T
-  }), " Confident"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      fontSize: 15,
-      color: T.textSoft
-    }
-  }, /*#__PURE__*/React.createElement(Dot, {
-    c: "low",
-    T: T
-  }), " Verify"), lowConfCount > 0 && /*#__PURE__*/React.createElement("button", {
-    onClick: () => setVerifyOnly(!verifyOnly),
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 5,
-      padding: "5px 14px",
-      background: verifyOnly ? T.yellow : "none",
-      border: `1.5px solid ${verifyOnly ? T.yellow : T.borderLight}`,
-      borderRadius: 14,
-      cursor: "pointer"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 14,
-      fontWeight: 700,
-      color: verifyOnly ? T.bg : T.yellow
-    }
-  }, verifyOnly ? "Show All" : `${lowConfCount} to verify`))), /*#__PURE__*/React.createElement("div", {
+  })(), /*#__PURE__*/React.createElement(ScanCheck, {
+    T: T,
+    low: lowConfCount,
+    totalFields: totalFields,
+    secCount: data.sections.length,
+    onOpen: () => { verifyTotalRef.current = lowConfCount; setShowVerify(true); }
+  }), showVerify && /*#__PURE__*/React.createElement(VerifyModal, {
+    T: T,
+    data: data,
+    total: verifyTotalRef.current,
+    onClose: () => setShowVerify(false),
+    onVerify: verifyItem,
+    onEdit: editItem
+  }), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 15,
       fontWeight: 600,
@@ -3984,51 +4595,14 @@ function CharacterScreen({
     T: T,
     width: "60%",
     spacing: "4px auto 12px"
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexWrap: "wrap",
-      justifyContent: "center",
-      gap: 8,
-      padding: "8px 16px 16px"
-    }
-  }, data.sections.map((sec, si) => /*#__PURE__*/React.createElement("button", {
-    key: sec.id,
-    onClick: () => setActiveSec(si),
-    className: "ss-chip",
-    style: {
-      padding: "7px 16px",
-      background: activeSec === si ? T.metalGrad : T.accentFaint,
-      border: `1px solid ${activeSec === si ? T.accent : T.borderLight}`,
-      borderRadius: 20,
-      cursor: "pointer",
-      fontSize: 12,
-      fontWeight: 700,
-      fontFamily: "'Cinzel',Georgia,serif",
-      color: activeSec === si ? T.bg : T.accent,
-      letterSpacing: activeSec === si ? 1.2 : 0.6,
-      transform: activeSec === si ? "translateY(-1px) scale(1.04)" : "none",
-      boxShadow: activeSec === si ? `0 4px 14px ${T.accentFaint}, inset 0 1px 0 rgba(255,255,255,0.25)` : "none"
-    }
-  }, sec.title)), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setActiveSec(data.sections.length),
-    className: "ss-chip",
-    style: {
-      padding: "7px 16px",
-      background: activeSec === data.sections.length ? T.metalGrad : T.accentFaint,
-      border: `1px solid ${activeSec === data.sections.length ? T.accent : T.borderLight}`,
-      borderRadius: 20,
-      cursor: "pointer",
-      fontSize: 12,
-      fontWeight: 700,
-      fontFamily: "'Cinzel',Georgia,serif",
-      color: activeSec === data.sections.length ? T.bg : T.accent,
-      letterSpacing: activeSec === data.sections.length ? 1.2 : 0.6,
-      transform: activeSec === data.sections.length ? "translateY(-1px) scale(1.04)" : "none",
-      boxShadow: activeSec === data.sections.length ? `0 4px 14px ${T.accentFaint}, inset 0 1px 0 rgba(255,255,255,0.25)` : "none"
-    }
-  }, "Journal")), data.sections.map((sec, si) => {
-    if (activeSec !== si) return null;
+  })), /*#__PURE__*/React.createElement(HubNav, {
+    T: T,
+    data: data,
+    group: group,
+    activeCat: activeCat,
+    setActiveCat: setActiveCat
+  }), data.sections.map((sec, si) => {
+    if (activeCat === null || group.catOf[si] !== activeCat) return null;
     if (verifyOnly && !sec.fields.some(f => f.confidence === "low")) return /*#__PURE__*/React.createElement("div", {
       key: sec.id,
       style: {
@@ -4053,32 +4627,15 @@ function CharacterScreen({
         textAlign: "center",
         marginBottom: 20
       }
-    }, editing ? /*#__PURE__*/React.createElement("input", {
-      value: sec.title,
-      onChange: e => updateSectionTitle(si, e.target.value),
-      style: {
-        fontSize: 20,
-        fontWeight: 700,
-        color: T.accent,
-        fontFamily: "'Cinzel',Georgia,serif",
-        background: T.accentFaint,
-        border: `1px solid ${T.borderLight}`,
-        borderRadius: 6,
-        padding: "4px 12px",
-        outline: "none",
-        textAlign: "center",
-        width: "80%"
-      }
-    }) : /*#__PURE__*/React.createElement("h2", {
-      style: {
-        fontSize: 20,
-        fontWeight: 700,
-        color: T.accent,
-        fontFamily: "'Cinzel',Georgia,serif",
-        letterSpacing: 2.5,
-        textShadow: T.titleShadow
-      }
-    }, sec.title), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", {
+      style: { display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
+    }, /*#__PURE__*/React.createElement(SectionTitle, {
+      T: T, value: sec.title, onChange: v => updateSectionTitle(si, v)
+    }), /*#__PURE__*/React.createElement(FieldMenu, {
+      T: T, k: "s" + si, menuKey: menuKey, setMenuKey: setMenuKey,
+      onMoveUp: () => moveSection(si, -1), onMoveDown: () => moveSection(si, 1),
+      onDelete: () => delSection(si), canUp: si > 0, canDown: si < data.sections.length - 1
+    })), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         alignItems: "center",
@@ -4110,7 +4667,7 @@ function CharacterScreen({
         color: T.textMuted,
         marginTop: 6
       }
-    }, sec.fields.length, " fields"), editing && /*#__PURE__*/React.createElement("div", {
+    }, sec.fields.length, " fields"), false && /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 8,
@@ -4178,19 +4735,12 @@ function CharacterScreen({
         gap: 4,
         boxShadow: T.cardShadow
       }
-    }, editing && /*#__PURE__*/React.createElement("button", {
-      onClick: () => removeField(si, fi),
-      style: {
-        position: "absolute",
-        top: 2,
-        right: 4,
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        fontSize: 11,
-        color: T.textMuted
-      }
-    }, "\u2715"), /*#__PURE__*/React.createElement(EditableLabel, {
+    }, /*#__PURE__*/React.createElement(FieldMenu, {
+      T: T, k: "f" + si + "_" + fi, menuKey: menuKey, setMenuKey: setMenuKey,
+      onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1),
+      onDelete: () => delField(si, fi), canUp: fi > 0, canDown: fi < sec.fields.length - 1,
+      style: { position: "absolute", top: 4, right: 4 }
+    }), /*#__PURE__*/React.createElement(EditableLabel, {
       value: f.label,
       onChange: v => updateField(si, fi, "label", v),
       T: T
@@ -4210,6 +4760,7 @@ function CharacterScreen({
       }
     }), /*#__PURE__*/React.createElement(Dot, {
       c: f.confidence,
+      onVerify: () => updateField(si, fi, "confidence", "high"),
       T: T,
       s: {
         margin: "2px auto 0"
@@ -4242,14 +4793,9 @@ function CharacterScreen({
           gap: 5,
           flex: 1
         }
-      }, editing && /*#__PURE__*/React.createElement(MoveButtons, {
-        T: T,
-        si: si,
-        fi: fi,
-        total: sec.fields.length,
-        moveField: moveField
-      }), /*#__PURE__*/React.createElement(Dot, {
+      }, /*#__PURE__*/React.createElement(Dot, {
         c: f.confidence,
+        onVerify: () => updateField(si, fi, "confidence", "high"),
         T: T
       }), /*#__PURE__*/React.createElement(EditableLabel, {
         value: f.label,
@@ -4272,16 +4818,11 @@ function CharacterScreen({
           textAlign: "right",
           maxWidth: 60
         }
-      }), editing && /*#__PURE__*/React.createElement("button", {
-        onClick: () => removeField(si, fi),
-        style: {
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          fontSize: 12,
-          color: T.textMuted
-        }
-      }, "\u2715"))), isPct && /*#__PURE__*/React.createElement("div", {
+      }), /*#__PURE__*/React.createElement(FieldMenu, {
+        T: T, k: "f" + si + "_" + fi, menuKey: menuKey, setMenuKey: setMenuKey,
+        onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1),
+        onDelete: () => delField(si, fi), canUp: fi > 0, canDown: fi < sec.fields.length - 1
+      }))), isPct && /*#__PURE__*/React.createElement("div", {
         style: {
           height: 4,
           background: T.accentFaint,
@@ -4334,6 +4875,7 @@ function CharacterScreen({
         }
       }, /*#__PURE__*/React.createElement(Dot, {
         c: f.confidence,
+        onVerify: () => updateField(si, fi, "confidence", "high"),
         T: T,
         s: {
           width: 6,
@@ -4348,17 +4890,12 @@ function CharacterScreen({
           borderBottom: "none",
           padding: 0
         }
-      }), editing && /*#__PURE__*/React.createElement("button", {
-        onClick: () => removeField(si, fi),
-        style: {
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          fontSize: 11,
-          color: T.textMuted,
-          marginLeft: 2
-        }
-      }, "\u2715"));
+      }), /*#__PURE__*/React.createElement(FieldMenu, {
+        T: T, k: "f" + si + "_" + fi, menuKey: menuKey, setMenuKey: setMenuKey,
+        onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1),
+        onDelete: () => delField(si, fi), canUp: fi > 0, canDown: fi < sec.fields.length - 1,
+        style: { marginLeft: 2 }
+      }));
     }))))), sty === "default" && /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
@@ -4374,14 +4911,9 @@ function CharacterScreen({
         padding: "10px 0",
         borderBottom: `1px solid ${T.accentFaint}`
       }
-    }, editing && /*#__PURE__*/React.createElement(MoveButtons, {
-      T: T,
-      si: si,
-      fi: fi,
-      total: sec.fields.length,
-      moveField: moveField
-    }), /*#__PURE__*/React.createElement(Dot, {
+    }, /*#__PURE__*/React.createElement(Dot, {
       c: f.confidence,
+      onVerify: () => updateField(si, fi, "confidence", "high"),
       T: T,
       s: {
         marginTop: 8
@@ -4401,18 +4933,12 @@ function CharacterScreen({
       value: f.value,
       onChange: v => updateField(si, fi, "value", v),
       T: T
-    })), editing && /*#__PURE__*/React.createElement("button", {
-      onClick: () => removeField(si, fi),
-      style: {
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        fontSize: 13,
-        color: T.textMuted,
-        padding: "4px",
-        flexShrink: 0
-      }
-    }, "\u2715")))), editing && /*#__PURE__*/React.createElement("button", {
+    })), /*#__PURE__*/React.createElement(FieldMenu, {
+      T: T, k: "f" + si + "_" + fi, menuKey: menuKey, setMenuKey: setMenuKey,
+      onMoveUp: () => moveField(si, fi, -1), onMoveDown: () => moveField(si, fi, 1),
+      onDelete: () => delField(si, fi), canUp: fi > 0, canDown: fi < sec.fields.length - 1,
+      style: { marginTop: 4 }
+    })))), /*#__PURE__*/React.createElement("button", {
       onClick: () => addField(si),
       style: {
         display: "flex",
@@ -4433,7 +4959,7 @@ function CharacterScreen({
         color: T.accentDim
       }
     }, "+ Add Field")));
-  }), activeSec === data.sections.length && /*#__PURE__*/React.createElement("div", {
+  }), activeCat === "journal" && /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "24px 18px 40px",
       display: "flex",
@@ -4676,7 +5202,7 @@ function CharacterScreen({
       fontSize: 15,
       color: "rgba(196,90,90,0.7)"
     }
-  }, "\u2694 Archive to Fallen Heroes")), editing && /*#__PURE__*/React.createElement("button", {
+  }, "\u2694 Archive to Fallen Heroes")), /*#__PURE__*/React.createElement("button", {
     onClick: addSection,
     style: {
       display: "flex",
@@ -4703,6 +5229,7 @@ function CharacterScreen({
 /* ━━━━ MAIN APP ━━━━ */
 function SheetSnap() {
   const [view, setView] = useState("loading");
+  const catBackRef = useRef({ open: false, close: null });
   const [themeKey, setThemeKey] = useState("parchment");
   const [characters, setCharacters] = useState([]);
   const [fallenHeroes, setFallenHeroes] = useState([]);
@@ -4751,6 +5278,11 @@ function SheetSnap() {
   // (instead of exiting). From Home, back exits the app as users expect.
   useEffect(() => {
     const onPop = () => {
+      if (catBackRef.current && catBackRef.current.open) {
+        catBackRef.current.open = false;
+        if (catBackRef.current.close) catBackRef.current.close();
+        return;
+      }
       setView(v => v === "home" || v === "loading" ? v : "home");
     };
     window.addEventListener("popstate", onPop);
@@ -4882,7 +5414,8 @@ function SheetSnap() {
       setView("home");
     },
     themeKey: themeKey,
-    setThemeKey: setThemeKey
+    setThemeKey: setThemeKey,
+    catBackRef: catBackRef
   }));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(SheetSnap, null));
