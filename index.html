@@ -2432,7 +2432,7 @@ function ProcessingScreen({
           })
         })).filter(s => s.fields.length > 0);
         if (!parsed.sections.length) throw new Error("No readable sections found");
-        setTimeout(() => { buzz([12, 45, 18]); onComplete(parsed); }, 800);
+        setTimeout(() => { buzz([30, 60, 40]); onComplete(parsed); }, 800);
       } catch (err) {
         setError(err.message);
       }
@@ -3711,6 +3711,7 @@ function FieldMenu({
       top,
       left
     });
+    buzz(18);
     setMenuKey(k);
   };
   const item = (enabled, icon, label, fn, danger) => /*#__PURE__*/React.createElement("div", {
@@ -3983,7 +3984,7 @@ function ConfirmDialog({
       fontSize: 14
     }
   }, "Cancel"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => { if (Date.now() - t0.current > 350) { buzz(15); onConfirm(); } },
+    onClick: () => { if (Date.now() - t0.current > 350) { buzz(35); onConfirm(); } },
     className: "ss-press",
     style: {
       flex: 1,
@@ -4594,7 +4595,7 @@ function CharacterScreen({
     setMenuKey(null);
     setRenameCat({ cat: cat, current: (data.catLabels && data.catLabels[cat.key]) || (CAT_META[cat.key] || {}).label || cat.label || "" });
   };
-  const undoToast = () => { buzz(10); undo(); setToast(null); };
+  const undoToast = () => { buzz(25); undo(); setToast(null); };
   const doMoveField = ti => {
     if (!moveItem) return;
     const sec = data.sections[moveItem.si];
@@ -5954,7 +5955,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.c
 })();
 </script>
 <button id="ss-sync-btn" aria-label="Cloud sync" style="position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:99999;min-height:40px;padding:.5rem .8rem;border:1px solid #D4A843;border-radius:20px;background:#0A0A0C;color:#D4A843;font:600 13px 'Josefin Sans',system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.4);cursor:pointer;">&#9729; Sign in to sync</button>
-<div id="ss-build" style="position:fixed;left:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:99999;font:700 11px system-ui,sans-serif;color:#D4A843;opacity:.75;pointer-events:none;letter-spacing:.5px;">v23</div>
+<div id="ss-build" style="position:fixed;left:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:99999;font:700 11px system-ui,sans-serif;color:#D4A843;opacity:.75;pointer-events:none;letter-spacing:.5px;">v24</div>
 <script>/*Shalden Edition cloud sync — reuses DigiRune twisted-companion Firebase project*/
 (function(){
  var FB="https://www.gstatic.com/firebasejs/10.12.2/";
